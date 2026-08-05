@@ -447,10 +447,10 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Form submits `POST /leads/consultation`, stores returned lead id in context
-- [ ] Before submit, queries `GET /leads?cpf=...&status=...`; shows modal with Continue/Start New when an active lead is found
-- [ ] Continue → `GET /leads/{id}`, navigates to `progress.currentStep`
-- [ ] Loading/error states handled
+- [x] Form submits `POST /leads/consultation`, stores returned lead id in context
+- [x] Before submit, queries `GET /leads?cpf=...&status=...`; shows modal with Continue/Start New when an active lead is found
+- [x] Continue → `GET /leads/{id}`, navigates to `progress.currentStep`
+- [x] Loading/error states handled
 
 **Tests**: none
 **Gate**: Build (frontend)
