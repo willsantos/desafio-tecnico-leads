@@ -1,0 +1,28 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__MongoDb: mongodb://mongo:27017/consignado_leads
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
