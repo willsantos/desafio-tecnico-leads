@@ -324,9 +324,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Persists all identification fields + query result regardless of outcome
-- [ ] `not_found`/`diverging`/`unavailable` preserve already-typed data (no data loss)
-- [ ] 404 missing lead; 409 `expectedVersion` mismatch; deterministic default (`found`) when flag off
+- [x] Persists all identification fields + query result regardless of outcome
+- [x] `not_found`/`diverging`/`unavailable` preserve already-typed data (no data loss)
+- [x] 404 missing lead; 409 `expectedVersion` mismatch; deterministic default (`found`) when flag off
 
 **Tests**: integration
 **Gate**: Full

@@ -2,6 +2,7 @@ using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Logging;
 using ConsignadoLeads.Api.Features.Consultation;
+using ConsignadoLeads.Api.Features.Identification;
 using ConsignadoLeads.Api.Features.Leads;
 using ConsignadoLeads.Api.Features.Simulation;
 using MongoDB.Driver;
@@ -21,6 +22,7 @@ builder.Services.AddSingleton<MockOutcomeResolver>();
 builder.Services.AddScoped<ConsultationHandler>();
 builder.Services.AddScoped<LeadsHandler>();
 builder.Services.AddScoped<SimulationHandler>();
+builder.Services.AddScoped<IdentificationHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -42,9 +44,9 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapConsultationEndpoints();
 app.MapLeadsEndpoints();
 app.MapSimulationEndpoints();
+app.MapIdentificationEndpoints();
 
 // TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
-//   PUT    /leads/{id}/steps/identification
 //   PUT    /leads/{id}/steps/professional-banking-data
 //   POST   /leads/{id}/documents
 //   GET    /leads/{id}/documents
