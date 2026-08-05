@@ -424,9 +424,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] `httpClient` targets `http://localhost:8080`, parses Problem Details on non-2xx
-- [ ] `leadContext` exposes current lead id + progress + setters, consumable by every step
-- [ ] `npm run build` passes
+- [x] `httpClient` targets `http://localhost:8080`, parses Problem Details on non-2xx
+- [x] `leadContext` exposes current lead id + progress + setters, consumable by every step
+- [x] `npm run build` passes
 
 **Tests**: none
 **Gate**: Build (frontend)
