@@ -4,6 +4,7 @@ using ConsignadoLeads.Api.Core.Logging;
 using ConsignadoLeads.Api.Features.Consultation;
 using ConsignadoLeads.Api.Features.Identification;
 using ConsignadoLeads.Api.Features.Leads;
+using ConsignadoLeads.Api.Features.ProfessionalBankingData;
 using ConsignadoLeads.Api.Features.Simulation;
 using MongoDB.Driver;
 
@@ -23,6 +24,7 @@ builder.Services.AddScoped<ConsultationHandler>();
 builder.Services.AddScoped<LeadsHandler>();
 builder.Services.AddScoped<SimulationHandler>();
 builder.Services.AddScoped<IdentificationHandler>();
+builder.Services.AddScoped<ProfessionalBankingDataHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -45,9 +47,9 @@ app.MapConsultationEndpoints();
 app.MapLeadsEndpoints();
 app.MapSimulationEndpoints();
 app.MapIdentificationEndpoints();
+app.MapProfessionalBankingDataEndpoints();
 
 // TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
-//   PUT    /leads/{id}/steps/professional-banking-data
 //   POST   /leads/{id}/documents
 //   GET    /leads/{id}/documents
 //   DELETE /leads/{id}/documents/{documentId}

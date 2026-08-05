@@ -347,9 +347,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Persists both `professionalData` and `bankingData` without erasing other step data (assert `consultation`/`simulations`/`identification` intact after this update)
-- [ ] `pixKey` optional (absent or empty accepted)
-- [ ] 404 missing lead; 409 `expectedVersion` mismatch
+- [x] Persists both `professionalData` and `bankingData` without erasing other step data (assert `consultation`/`simulations`/`identification` intact after this update)
+- [x] `pixKey` optional (absent or empty accepted)
+- [x] 404 missing lead; 409 `expectedVersion` mismatch
 
 **Tests**: integration
 **Gate**: Full
