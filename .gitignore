@@ -11,3 +11,10 @@ package-lock.json
 # vendored AI-agent skill packages (local tooling, not project source)
 .claude/skills/
 .github/skills/
+.agent/
+.agents/
+.codex/
+.cursor/
+.gemini/
+.kiro/
+.opencode/
