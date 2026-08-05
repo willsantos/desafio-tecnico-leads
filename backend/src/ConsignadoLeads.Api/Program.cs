@@ -1,6 +1,7 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Logging;
+using ConsignadoLeads.Api.Features.Confirmation;
 using ConsignadoLeads.Api.Features.Consultation;
 using ConsignadoLeads.Api.Features.Documents;
 using ConsignadoLeads.Api.Features.Identification;
@@ -11,9 +12,7 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO: registre aqui seus serviços (repositórios, casos de uso, validação, logging estruturado...).
 // A connection string do MongoDB chega via ConnectionStrings__MongoDb (ver docker-compose.yml).
-
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDb")
     ?? throw new InvalidOperationException("ConnectionStrings__MongoDb não configurada.");
 
@@ -27,6 +26,8 @@ builder.Services.AddScoped<SimulationHandler>();
 builder.Services.AddScoped<IdentificationHandler>();
 builder.Services.AddScoped<ProfessionalBankingDataHandler>();
 builder.Services.AddScoped<DocumentsHandler>();
+builder.Services.AddSingleton<IMainSystemMock, MainSystemMock>();
+builder.Services.AddScoped<ConfirmationHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -51,10 +52,7 @@ app.MapSimulationEndpoints();
 app.MapIdentificationEndpoints();
 app.MapProfessionalBankingDataEndpoints();
 app.MapDocumentsEndpoints();
-
-// TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
-//   POST   /leads/{id}/confirm
-//   POST   /leads/{id}/retry-submission
+app.MapConfirmationEndpoints();
 
 app.Run();
 

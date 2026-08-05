@@ -40,6 +40,7 @@ public class ProblemDetailsExceptionHandler(IProblemDetailsService problemDetail
         ConfirmationInProgressException e => Build(StatusCodes.Status409Conflict, "Conflict", "confirmation-in-progress", e.Message),
         LeadAlreadyCompletedException e => Build(StatusCodes.Status409Conflict, "Conflict", "lead-already-completed", e.Message),
         ConsultationNotCompletedException e => Build(StatusCodes.Status409Conflict, "Conflict", "consultation-not-completed", e.Message),
+        NoPriorConfirmationAttemptException e => Build(StatusCodes.Status409Conflict, "Conflict", "no-prior-confirmation-attempt", e.Message),
         PendingRequirementsException e => Build(StatusCodes.Status422UnprocessableEntity, "Unprocessable Entity", "pending-requirements", e.Message,
             extensions: new Dictionary<string, object?> { ["reasons"] = e.Reasons }),
         MainSystemUnavailableException e => Build(StatusCodes.Status503ServiceUnavailable, "Service Unavailable", "main-system-unavailable", e.Message),

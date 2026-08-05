@@ -396,12 +396,12 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `PendingRequirementsValidator` unit tests cover every pendency combination (missing simulation, missing identification, incompatible document, missing required documents)
-- [ ] 422 with exact pendency reasons when validation fails, no mock call made
-- [ ] All 6 mock outcomes mapped to the documented status code (`success`→200/completed, `rejected`/`validationError`→422/failed_retryable, `unavailable`→503/failed_retryable, `timeout`→504/failed_retryable, `indeterminate`→202/pending_verification)
-- [ ] `retry-submission`: idempotent 200 when `finalRegistration.registrationId` already set (no second mock call — assert via call-count spy); real retry (calls mock again) when `failed_retryable`/`pending_verification` without a saved `registrationId`; 409 if never confirmed
-- [ ] **Concurrency test**: two simultaneous `confirm` calls on the same lead → exactly one succeeds, the other gets 409
-- [ ] Deterministic default (`success`) when flag off
+- [x] `PendingRequirementsValidator` unit tests cover every pendency combination (missing simulation, missing identification, incompatible document, missing required documents)
+- [x] 422 with exact pendency reasons when validation fails, no mock call made
+- [x] All 6 mock outcomes mapped to the documented status code (`success`→200/completed, `rejected`/`validationError`→422/failed_retryable, `unavailable`→503/failed_retryable, `timeout`→504/failed_retryable, `indeterminate`→202/pending_verification)
+- [x] `retry-submission`: idempotent 200 when `finalRegistration.registrationId` already set (no second mock call — assert via call-count spy); real retry (calls mock again) when `failed_retryable`/`pending_verification` without a saved `registrationId`; 409 if never confirmed
+- [x] **Concurrency test**: two simultaneous `confirm` calls on the same lead → exactly one succeeds, the other gets 409
+- [x] Deterministic default (`success`) when flag off
 
 **Tests**: unit, integration
 **Gate**: Full
