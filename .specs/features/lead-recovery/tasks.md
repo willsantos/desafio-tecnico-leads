@@ -494,9 +494,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Form submits `PUT .../steps/identification` with all required fields
-- [ ] Shows the query result (`found`/`not_found`/`diverging`/`unavailable`) and lets the user continue/correct
-- [ ] Loading/error states handled
+- [x] Form submits `PUT .../steps/identification` with all required fields
+- [x] Shows the query result (`found`/`not_found`/`diverging`/`unavailable`) and lets the user continue/correct
+- [x] Loading/error states handled
 
 **Tests**: none
 **Gate**: Build (frontend)
