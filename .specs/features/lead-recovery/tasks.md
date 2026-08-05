@@ -112,9 +112,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Project created with `xunit`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk`, `Testcontainers.MongoDb`, `Microsoft.AspNetCore.Mvc.Testing`
-- [ ] Referenced from `ConsignadoLeads.slnx`
-- [ ] `dotnet test backend/ConsignadoLeads.slnx` runs (0 tests, exit 0)
+- [x] Project created with `xunit`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk`, `Testcontainers.MongoDb`, `Microsoft.AspNetCore.Mvc.Testing`
+- [x] Referenced from `ConsignadoLeads.slnx`
+- [x] `dotnet test backend/ConsignadoLeads.slnx` runs (0 tests, exit 0)
 
 **Tests**: none
 **Gate**: Build (backend)
