@@ -517,8 +517,8 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Form submits `PUT .../steps/professional-banking-data`, `pixKey` optional
-- [ ] Loading/error states handled
+- [x] Form submits `PUT .../steps/professional-banking-data`, `pixKey` optional
+- [x] Loading/error states handled
 
 **Tests**: none
 **Gate**: Build (frontend)
