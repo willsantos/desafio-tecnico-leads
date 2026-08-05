@@ -278,9 +278,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `pageSize` default 20, clamped at 100; `page` 1-based default 1; sort `createdAt` desc
-- [ ] `cpf` additive filter works (used by frontend P2-1 modal)
-- [ ] `GET /leads/{id}` 404 when missing; includes active documents when present
+- [x] `pageSize` default 20, clamped at 100; `page` 1-based default 1; sort `createdAt` desc
+- [x] `cpf` additive filter works (used by frontend P2-1 modal)
+- [x] `GET /leads/{id}` 404 when missing; includes active documents when present
 
 **Tests**: integration
 **Gate**: Full

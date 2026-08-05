@@ -2,6 +2,7 @@ using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Logging;
 using ConsignadoLeads.Api.Features.Consultation;
+using ConsignadoLeads.Api.Features.Leads;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddSingleton(sp => new MongoContext(sp.GetRequiredService<IMong
 builder.Services.AddSingleton<MockOutcomeResolver>();
 
 builder.Services.AddScoped<ConsultationHandler>();
+builder.Services.AddScoped<LeadsHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -36,6 +38,7 @@ await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapConsultationEndpoints();
+app.MapLeadsEndpoints();
 
 // TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
 //   POST   /leads/{id}/steps/simulation
@@ -47,8 +50,6 @@ app.MapConsultationEndpoints();
 //   DELETE /leads/{id}/documents/{documentId}
 //   POST   /leads/{id}/confirm
 //   POST   /leads/{id}/retry-submission
-//   GET    /leads
-//   GET    /leads/{id}
 
 app.Run();
 
