@@ -301,9 +301,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `SimulationCalculator` unit test matches README exact example (`requestedAmount=10000, installments=24` → `516.81`/`12403.44`)
-- [ ] New simulation always `selected=true`, previous ones flip to `false`, history preserved
-- [ ] 404 lead missing; 409 if consultation step not completed; select endpoint 404 if lead/simulation missing, never recalculates
+- [x] `SimulationCalculator` unit test matches README exact example (`requestedAmount=10000, installments=24` → `516.81`/`12403.44`)
+- [x] New simulation always `selected=true`, previous ones flip to `false`, history preserved
+- [x] 404 lead missing; 409 if consultation step not completed; select endpoint 404 if lead/simulation missing, never recalculates
 
 **Tests**: unit, integration
 **Gate**: Full

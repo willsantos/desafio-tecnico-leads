@@ -34,10 +34,12 @@ public class ProblemDetailsExceptionHandler(IProblemDetailsService problemDetail
     {
         LeadNotFoundException e => Build(StatusCodes.Status404NotFound, "Not Found", "lead-not-found", e.Message),
         DocumentNotFoundException e => Build(StatusCodes.Status404NotFound, "Not Found", "document-not-found", e.Message),
+        SimulationNotFoundException e => Build(StatusCodes.Status404NotFound, "Not Found", "simulation-not-found", e.Message),
         VersionConflictException e => Build(StatusCodes.Status409Conflict, "Conflict", "version-conflict", e.Message,
             extensions: new Dictionary<string, object?> { ["currentVersion"] = e.CurrentVersion }),
         ConfirmationInProgressException e => Build(StatusCodes.Status409Conflict, "Conflict", "confirmation-in-progress", e.Message),
         LeadAlreadyCompletedException e => Build(StatusCodes.Status409Conflict, "Conflict", "lead-already-completed", e.Message),
+        ConsultationNotCompletedException e => Build(StatusCodes.Status409Conflict, "Conflict", "consultation-not-completed", e.Message),
         PendingRequirementsException e => Build(StatusCodes.Status422UnprocessableEntity, "Unprocessable Entity", "pending-requirements", e.Message,
             extensions: new Dictionary<string, object?> { ["reasons"] = e.Reasons }),
         MainSystemUnavailableException e => Build(StatusCodes.Status503ServiceUnavailable, "Service Unavailable", "main-system-unavailable", e.Message),
