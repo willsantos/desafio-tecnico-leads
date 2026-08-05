@@ -370,12 +370,12 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Upload rejects >10MB or non-`image/jpeg`/`image/png`/`application/pdf` with 400, before touching Mongo/GridFS
-- [ ] 404 on missing lead (upload never creates a lead)
-- [ ] Re-upload of same `type` marks previous version `replaced`
-- [ ] `personalDocumentSubtype` mismatch vs. `identification.documentType` is recorded as a blocking pendency (surfaced at etapa 6, not just silently accepted)
-- [ ] `GET` excludes `deleted`/`replaced`; `DELETE` soft-deletes (204), 404 if missing
-- [ ] Separate calls with abandonment between them both persist correctly
+- [x] Upload rejects >10MB or non-`image/jpeg`/`image/png`/`application/pdf` with 400, before touching Mongo/GridFS
+- [x] 404 on missing lead (upload never creates a lead)
+- [x] Re-upload of same `type` marks previous version `replaced`
+- [x] `personalDocumentSubtype` mismatch vs. `identification.documentType` is recorded as a blocking pendency (surfaced at etapa 6, not just silently accepted)
+- [x] `GET` excludes `deleted`/`replaced`; `DELETE` soft-deletes (204), 404 if missing
+- [x] Separate calls with abandonment between them both persist correctly
 
 **Tests**: integration
 **Gate**: Full

@@ -2,6 +2,7 @@ using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Logging;
 using ConsignadoLeads.Api.Features.Consultation;
+using ConsignadoLeads.Api.Features.Documents;
 using ConsignadoLeads.Api.Features.Identification;
 using ConsignadoLeads.Api.Features.Leads;
 using ConsignadoLeads.Api.Features.ProfessionalBankingData;
@@ -25,6 +26,7 @@ builder.Services.AddScoped<LeadsHandler>();
 builder.Services.AddScoped<SimulationHandler>();
 builder.Services.AddScoped<IdentificationHandler>();
 builder.Services.AddScoped<ProfessionalBankingDataHandler>();
+builder.Services.AddScoped<DocumentsHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -48,11 +50,9 @@ app.MapLeadsEndpoints();
 app.MapSimulationEndpoints();
 app.MapIdentificationEndpoints();
 app.MapProfessionalBankingDataEndpoints();
+app.MapDocumentsEndpoints();
 
 // TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
-//   POST   /leads/{id}/documents
-//   GET    /leads/{id}/documents
-//   DELETE /leads/{id}/documents/{documentId}
 //   POST   /leads/{id}/confirm
 //   POST   /leads/{id}/retry-submission
 
