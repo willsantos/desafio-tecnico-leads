@@ -1,4 +1,5 @@
 using ConsignadoLeads.Api.Core;
+using ConsignadoLeads.Api.Core.Exceptions;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +16,12 @@ builder.Services.AddSingleton(sp => new MongoContext(sp.GetRequiredService<IMong
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
+
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseCors();
 
 await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();

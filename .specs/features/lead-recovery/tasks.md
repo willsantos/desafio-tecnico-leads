@@ -182,9 +182,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Every exception type from `design.md` Error Handling Strategy exists and maps to its documented status code
-- [ ] Response body includes `type`, `title`, `status`, `detail` (+ `extensions.currentVersion` for `VersionConflictException`)
-- [ ] No behavior test yet (nothing throws these until Phase 2) — mapping verified transitively by Phase 2 integration tests
+- [x] Every exception type from `design.md` Error Handling Strategy exists and maps to its documented status code
+- [x] Response body includes `type`, `title`, `status`, `detail` (+ `extensions.currentVersion` for `VersionConflictException`)
+- [x] No behavior test yet (nothing throws these until Phase 2) — mapping verified transitively by Phase 2 integration tests
 
 **Tests**: none
 **Gate**: Build (backend)
