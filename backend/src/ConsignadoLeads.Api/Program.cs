@@ -1,7 +1,16 @@
+using ConsignadoLeads.Api.Core;
+using MongoDB.Driver;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO: registre aqui seus serviços (cliente MongoDB.Driver, repositórios, casos de uso, validação, logging estruturado...).
+// TODO: registre aqui seus serviços (repositórios, casos de uso, validação, logging estruturado...).
 // A connection string do MongoDB chega via ConnectionStrings__MongoDb (ver docker-compose.yml).
+
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDb")
+    ?? throw new InvalidOperationException("ConnectionStrings__MongoDb não configurada.");
+
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
+builder.Services.AddSingleton(sp => new MongoContext(sp.GetRequiredService<IMongoClient>(), mongoConnectionString));
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -9,6 +18,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
+
+await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();
 
 // Obrigatório para a suíte de avaliação: 200 quando a API está pronta.
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));

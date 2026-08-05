@@ -159,9 +159,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `MongoContext` registered as singleton in `Program.cs`
-- [ ] Indexes created on startup (idempotent — safe to run every boot)
-- [ ] API still starts; `docker compose up --build` → `GET /health` returns 200
+- [x] `MongoContext` registered as singleton in `Program.cs`
+- [x] Indexes created on startup (idempotent — safe to run every boot)
+- [x] API still starts; `docker compose up --build` → `GET /health` returns 200
 
 **Tests**: none
 **Gate**: Build (backend)
