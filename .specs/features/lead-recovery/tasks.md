@@ -205,10 +205,10 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] Flag off (or unset) → always returns `deterministicDefault`, ignoring `mockOutcome`
-- [ ] Flag on + valid `mockOutcome` string → returns parsed enum value
-- [ ] Flag on + missing/invalid `mockOutcome` → returns `deterministicDefault`
-- [ ] Unit tests cover all 3 branches (3+ test cases)
+- [x] Flag off (or unset) → always returns `deterministicDefault`, ignoring `mockOutcome`
+- [x] Flag on + valid `mockOutcome` string → returns parsed enum value
+- [x] Flag on + missing/invalid `mockOutcome` → returns `deterministicDefault`
+- [x] Unit tests cover all 3 branches (3+ test cases)
 
 **Tests**: unit
 **Gate**: Quick
