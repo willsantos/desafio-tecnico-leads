@@ -471,9 +471,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Calls `POST /leads/{id}/steps/simulation`, displays `installmentAmount`/`totalAmount`
-- [ ] Lists simulation history, lets the user `PATCH .../select` a different one
-- [ ] Loading/error states handled
+- [x] Calls `POST /leads/{id}/steps/simulation`, displays `installmentAmount`/`totalAmount`
+- [x] Lists simulation history, lets the user `PATCH .../select` a different one
+- [x] Loading/error states handled
 
 **Tests**: none
 **Gate**: Build (frontend)
