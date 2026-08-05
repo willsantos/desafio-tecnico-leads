@@ -1,5 +1,6 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
+using ConsignadoLeads.Api.Core.Logging;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseRequestLogging();
 app.UseCors();
 
 await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();

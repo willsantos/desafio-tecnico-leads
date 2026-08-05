@@ -229,9 +229,9 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `SensitiveDataMasker` redacts `cpf`, `documentNumber`, `bankingData.*` fields (present, absent, nested cases)
-- [ ] Request-logging middleware never logs raw request/response bodies, only method/path/status/duration
-- [ ] Unit tests cover masker branches (present/absent/nested, 3+ test cases)
+- [x] `SensitiveDataMasker` redacts `cpf`, `documentNumber`, `bankingData.*` fields (present, absent, nested cases)
+- [x] Request-logging middleware never logs raw request/response bodies, only method/path/status/duration
+- [x] Unit tests cover masker branches (present/absent/nested, 3+ test cases)
 
 **Tests**: unit
 **Gate**: Quick
