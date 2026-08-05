@@ -135,10 +135,10 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] All fields/nested types from `design.md` Data Models present
-- [ ] Enum-like fields modeled as `string` (mapped to contract enum values)
-- [ ] Fields for not-yet-reached steps marked `[BsonIgnoreIfNull]`
-- [ ] Solution builds
+- [x] All fields/nested types from `design.md` Data Models present
+- [x] Enum-like fields modeled as `string` (mapped to contract enum values)
+- [x] Fields for not-yet-reached steps marked `[BsonIgnoreIfNull]`
+- [x] Solution builds
 
 **Tests**: none
 **Gate**: Build (backend)
