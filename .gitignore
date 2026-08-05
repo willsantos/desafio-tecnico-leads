@@ -7,3 +7,7 @@ package-lock.json
 *.user
 .vs/
 .idea/
+
+# vendored AI-agent skill packages (local tooling, not project source)
+.claude/skills/
+.github/skills/
