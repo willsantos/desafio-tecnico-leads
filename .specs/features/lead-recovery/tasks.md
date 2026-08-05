@@ -254,10 +254,10 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `POST /leads/consultation` creates lead (201, `status=in_progress`, `version=1`) even on `unavailable` outcome (LEAD-03)
-- [ ] 400 when `consultationAuthorized=false` or required field missing, no lead created
-- [ ] `PUT .../steps/consultation` re-runs without creating a new lead (200); 404 if lead missing; 409 + `extensions.currentVersion` on `expectedVersion` mismatch
-- [ ] Deterministic default (`eligible`) when `ENABLE_TEST_ENDPOINTS != true`
+- [x] `POST /leads/consultation` creates lead (201, `status=in_progress`, `version=1`) even on `unavailable` outcome (LEAD-03)
+- [x] 400 when `consultationAuthorized=false` or required field missing, no lead created
+- [x] `PUT .../steps/consultation` re-runs without creating a new lead (200); 404 if lead missing; 409 + `extensions.currentVersion` on `expectedVersion` mismatch
+- [x] Deterministic default (`eligible`) when `ENABLE_TEST_ENDPOINTS != true`
 
 **Tests**: integration
 **Gate**: Full

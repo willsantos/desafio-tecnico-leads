@@ -1,6 +1,7 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Logging;
+using ConsignadoLeads.Api.Features.Consultation;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDb")
 
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
 builder.Services.AddSingleton(sp => new MongoContext(sp.GetRequiredService<IMongoClient>(), mongoConnectionString));
+builder.Services.AddSingleton<MockOutcomeResolver>();
+
+builder.Services.AddScoped<ConsultationHandler>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -31,9 +35,9 @@ await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();
 // Obrigatório para a suíte de avaliação: 200 quando a API está pronta.
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-// TODO: implemente o contrato de API descrito no README (seção "CONTRATO DE API"):
-//   POST   /leads/consultation
-//   PUT    /leads/{id}/steps/consultation
+app.MapConsultationEndpoints();
+
+// TODO: implemente o restante do contrato de API descrito no README (seção "CONTRATO DE API"):
 //   POST   /leads/{id}/steps/simulation
 //   PATCH  /leads/{id}/steps/simulation/{simulationId}/select
 //   PUT    /leads/{id}/steps/identification
@@ -47,3 +51,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 //   GET    /leads/{id}
 
 app.Run();
+
+// Exposes the top-level Program class publicly so ConsignadoLeads.Api.Tests can spin up
+// WebApplicationFactory<Program> for integration tests.
+public partial class Program;

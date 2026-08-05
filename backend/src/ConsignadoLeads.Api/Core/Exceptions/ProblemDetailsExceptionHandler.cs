@@ -62,10 +62,13 @@ public class ProblemDetailsExceptionHandler(IProblemDetailsService problemDetail
 
         if (extensions is not null)
         {
-            foreach (var (key, value) in extensions)
-            {
-                problemDetails.Extensions[key] = value;
-            }
+            // README seção 5's Problem Details example nests extra fields under a single
+            // "extensions" object (e.g. `"extensions": { "currentVersion": 7 }`). The default
+            // ProblemDetails.Extensions dictionary instead flattens each entry to the JSON
+            // root, which would produce `"currentVersion": 7` at the top level — a shape
+            // mismatch with the frozen contract. Nesting everything under one "extensions" key
+            // reproduces the documented shape exactly.
+            problemDetails.Extensions["extensions"] = extensions;
         }
 
         return problemDetails;
