@@ -6,6 +6,7 @@ import { Button } from '../../shared/components/ui/Button'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
+import { maskCpf } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { resolveStepId, useLead } from '../../shared/leadContext'
 import { CpfReuseModal } from './CpfReuseModal'
@@ -126,10 +127,11 @@ export function ConsultationPage() {
             label="CPF"
             name="cpf"
             value={form.cpf}
-            onChange={(e) => updateField('cpf', e.target.value)}
+            mask={maskCpf}
+            onValueChange={(value) => value.length <= 11 && updateField('cpf', value)}
             required
-            maxLength={11}
-            placeholder="Somente números"
+            maxLength={14}
+            placeholder="000.000.000-00"
           />
           <Input
             label="Data de nascimento"

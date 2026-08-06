@@ -6,6 +6,7 @@ import { Card } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
+import { maskCpf, maskPhone } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
 import { DOCUMENT_TYPES, EMPTY_IDENTIFICATION_FORM, type IdentificationFormValues } from './identification.types'
@@ -106,9 +107,27 @@ export function IdentificationPage() {
         <Card title="Dados pessoais">
           <div className={styles.grid2}>
             <Input label="Nome completo" name="fullName" value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} required />
-            <Input label="CPF" name="cpf" value={form.cpf} onChange={(e) => updateField('cpf', e.target.value)} required maxLength={11} />
+            <Input
+              label="CPF"
+              name="cpf"
+              value={form.cpf}
+              mask={maskCpf}
+              onValueChange={(value) => value.length <= 11 && updateField('cpf', value)}
+              required
+              maxLength={14}
+              placeholder="000.000.000-00"
+            />
             <Input label="Data de nascimento" name="birthDate" type="date" value={form.birthDate} onChange={(e) => updateField('birthDate', e.target.value)} required />
-            <Input label="Telefone" name="phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} required />
+            <Input
+              label="Telefone"
+              name="phone"
+              value={form.phone}
+              mask={maskPhone}
+              onValueChange={(value) => value.length <= 11 && updateField('phone', value)}
+              required
+              maxLength={15}
+              placeholder="(00) 00000-0000"
+            />
             <Input label="E-mail" name="email" type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} required className={styles.span2} />
             <Input label="Nome da mãe" name="motherName" value={form.motherName} onChange={(e) => updateField('motherName', e.target.value)} required className={styles.span2} />
             <Input label="Estado civil" name="maritalStatus" value={form.maritalStatus} onChange={(e) => updateField('maritalStatus', e.target.value)} required />
