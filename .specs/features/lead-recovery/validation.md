@@ -274,3 +274,19 @@ No blocking issues found. Below are non-blocking follow-ups (all ⚠️, none �
 **Issues found**: 5 non-blocking (see Fix Plans 1-5 above) — none block a PASS verdict; all are either missing-but-low-risk test coverage, dead code, an assertion-strength nit, or stale doc bookkeeping.
 
 **Next steps**: Optional follow-ups (not required before calling the feature done): add the malformed-CPF test, add an identification concurrency test, tighten the confirm-422 reasons assertion, decide the fate of `SensitiveDataMasker`, and sync `spec.md`/`STATE.md` traceability status.
+
+---
+
+## Follow-up Resolution
+
+All 5 non-blocking follow-ups addressed (post-PASS polish, user-requested):
+
+| Fix | Commit | Resolution |
+| --- | --- | --- |
+| 1: Malformed-CPF test | `d1c751b` | 4-case `[Theory]` added to `ConsultationEndpointsTests.cs` |
+| 2: Identification concurrency test | `dde4861` | `Task.WhenAll` race test added to `IdentificationEndpointsTests.cs`, mirrors Confirmation's |
+| 3: `SensitiveDataMasker` dead code | `3a14313` | Wired into `RequestLoggingMiddleware`'s opt-in Debug-level body logging; multipart requests skipped. Proven end-to-end by a new integration test, not just T6's unit tests |
+| 4: Weak confirm-422 assertion | `af69505` | Test now parses `extensions.reasons` and asserts the exact 4-item array |
+| 5: Stale traceability/Handoff | `136ad89` | `spec.md` traceability/Goals/Success Criteria marked complete; `STATE.md` Handoff synced |
+
+Full suite after all 5 fixes: 85/85 backend tests passing (79 + 6 new), `dotnet format --verify-no-changes` clean, `dotnet build` clean.
