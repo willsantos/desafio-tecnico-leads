@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import styles from './StepIndicator.module.css'
 
 export interface StepIndicatorStep {
@@ -25,27 +26,34 @@ export function StepIndicator({
           const isCurrent = step.id === currentStepId
           const isCompleted = completedStepIds.has(step.id)
           const isClickable = Boolean(onStepClick) && isCompleted && !isCurrent
+          const isLast = index === steps.length - 1
 
           return (
-            <li key={step.id} className={styles.item}>
-              <button
-                type="button"
-                onClick={isClickable ? () => onStepClick?.(step.id) : undefined}
-                disabled={!isClickable}
-                aria-current={isCurrent ? 'step' : undefined}
-                className={[
-                  styles.button,
-                  isCurrent ? styles.current : isCompleted ? styles.completed : styles.pending,
-                  isClickable ? styles.clickable : '',
-                ].join(' ')}
-              >
-                <span className={styles.circle} aria-hidden="true">
-                  {isCompleted && !isCurrent ? '✓' : index + 1}
-                </span>
-                <span className={styles.label}>{step.label}</span>
-              </button>
-              {index < steps.length - 1 && <span className={styles.connector} aria-hidden="true" />}
-            </li>
+            <Fragment key={step.id}>
+              <li className={styles.item}>
+                <button
+                  type="button"
+                  onClick={isClickable ? () => onStepClick?.(step.id) : undefined}
+                  disabled={!isClickable}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  className={[
+                    styles.button,
+                    isCurrent ? styles.current : isCompleted ? styles.completed : styles.pending,
+                    isClickable ? styles.clickable : '',
+                  ].join(' ')}
+                >
+                  <span className={styles.circle} aria-hidden="true">
+                    {isCompleted && !isCurrent ? '✓' : index + 1}
+                  </span>
+                  <span className={styles.label}>{step.label}</span>
+                </button>
+              </li>
+              {!isLast && (
+                <li className={styles.connectorItem} aria-hidden="true">
+                  <span className={styles.connector} />
+                </li>
+              )}
+            </Fragment>
           )
         })}
       </ol>
