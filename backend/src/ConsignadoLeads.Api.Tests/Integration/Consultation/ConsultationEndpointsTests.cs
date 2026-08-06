@@ -88,6 +88,10 @@ public class ConsultationEndpointsTests : IClassFixture<LeadRecoveryWebApplicati
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(0, await CountLeadsByCpfAsync("33333333333"));
+
+        var problemJson = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(problemJson);
+        Assert.Equal("Um ou mais campos da requisição são inválidos.", doc.RootElement.GetProperty("detail").GetString());
     }
 
     [Theory]

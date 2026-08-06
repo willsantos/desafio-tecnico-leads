@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace ConsignadoLeads.Api.Core;
 
 /// <summary>
@@ -8,6 +10,25 @@ namespace ConsignadoLeads.Api.Core;
 /// </summary>
 public static class ValidationErrorsExtensions
 {
-    public static IResult ToValidationProblem(this IReadOnlyList<string> errors) =>
-        Results.ValidationProblem(new Dictionary<string, string[]> { ["request"] = [.. errors] });
+    private const string TypeBaseUri = "https://errors.consignado-leads/";
+
+    public static IResult ToValidationProblem(this IReadOnlyList<string> errors)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Type = TypeBaseUri + "request-validation",
+            Title = "Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Detail = "Um ou mais campos da requisição são inválidos.",
+        };
+
+        // Mirrors the nesting style used by ProblemDetailsExceptionHandler so the JSON shape
+        // stays consistent with the README seção 5 Problem Details example.
+        problemDetails.Extensions["extensions"] = new Dictionary<string, object?>
+        {
+            ["errors"] = new Dictionary<string, string[]> { ["request"] = [.. errors] }
+        };
+
+        return TypedResults.Problem(problemDetails);
+    }
 }
