@@ -539,9 +539,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Uploads via `POST .../documents` (multipart), lists active docs via `GET`, allows delete via `DELETE`
-- [ ] Each upload can be done independently (no forced pairing in one request)
-- [ ] Loading/error states handled
+- [x] Uploads via `POST .../documents` (multipart), lists active docs via `GET`, allows delete via `DELETE`
+- [x] Each upload can be done independently (no forced pairing in one request)
+- [x] Loading/error states handled
 
 **Tests**: none
 **Gate**: Build (frontend)
