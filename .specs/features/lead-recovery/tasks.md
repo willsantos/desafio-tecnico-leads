@@ -585,9 +585,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] `App.tsx` renders the stepper + current step's page based on `leadContext`
-- [ ] Manual click-through of all 6 steps works against a running backend
-- [ ] `npm run build` passes
+- [x] `App.tsx` renders the stepper + current step's page based on `leadContext`
+- [x] Manual click-through of all 6 steps works against a running backend
+- [x] `npm run build` passes
 
 **Tests**: none
 **Gate**: Build (frontend)
