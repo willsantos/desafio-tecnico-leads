@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using ConsignadoLeads.Api.Core.Dtos;
 using ConsignadoLeads.Api.Features.Confirmation;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -111,7 +112,19 @@ public class ConfirmationEndpointsTests : IClassFixture<LeadRecoveryWebApplicati
 
         Assert.Equal((HttpStatusCode)422, response.StatusCode);
         var problemJson = await response.Content.ReadAsStringAsync();
-        Assert.Contains("simulação", problemJson, StringComparison.OrdinalIgnoreCase);
+        using var doc = JsonDocument.Parse(problemJson);
+        var reasons = doc.RootElement.GetProperty("extensions").GetProperty("reasons").EnumerateArray().Select(r => r.GetString()).ToList();
+
+        // A lead that only went through etapa 1 (consultation) is missing all 4 remaining
+        // requirements — asserts the exact reasons list (spec P1-6 AC2), not a substring.
+        Assert.Equal(
+            [
+                "Nenhuma simulação selecionada.",
+                "Consulta de identificação não foi concluída.",
+                "Documento pessoal obrigatório não foi enviado.",
+                "Contracheque obrigatório não foi enviado.",
+            ],
+            reasons);
         Assert.Equal(0, spy.CallCount);
     }
 
