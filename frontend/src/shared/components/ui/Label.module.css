@@ -1,0 +1,11 @@
+.label {
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-xs);
+}
+
+.required {
+  color: var(--color-error-500);
+}

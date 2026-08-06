@@ -1,0 +1,105 @@
+.list {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--space-xs);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: var(--font-size-sm);
+  text-align: center;
+  transition: color var(--transition-fast);
+  min-width: 44px;
+}
+
+.button:disabled {
+  cursor: default;
+}
+
+.circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  border: 2px solid transparent;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.label {
+  display: none;
+}
+
+.pending .circle {
+  background-color: var(--color-gray-100);
+  color: var(--color-text-secondary);
+  border-color: var(--color-gray-300);
+}
+
+.current .circle {
+  background-color: var(--color-primary-700);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary-700);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.completed .circle {
+  background-color: var(--color-primary-600);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary-600);
+}
+
+.clickable:hover .circle {
+  background-color: var(--color-primary-800);
+  border-color: var(--color-primary-800);
+}
+
+.connector {
+  flex: 1;
+  height: 2px;
+  background-color: var(--color-gray-200);
+  margin: 0 var(--space-xs);
+  margin-top: 1rem;
+  min-width: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .label {
+    display: inline;
+    font-weight: var(--font-weight-medium);
+  }
+
+  .pending .label {
+    color: var(--color-text-secondary);
+  }
+
+  .current .label {
+    color: var(--color-primary-800);
+  }
+
+  .completed .label {
+    color: var(--color-primary-700);
+  }
+}
