@@ -82,14 +82,11 @@ export function ConsultationPage() {
     await submitConsultation(form)
   }
 
-  async function handleContinueExisting() {
-    if (!activeLeads || activeLeads.length === 0) {
-      return
-    }
+  async function handleContinueExisting(leadId: string) {
     setSubmitting(true)
     setError(null)
     try {
-      const fullLead = await getLeadById(activeLeads[0].id)
+      const fullLead = await getLeadById(leadId)
       setLead(fullLead)
       setStep(resolveStepId(fullLead))
       setActiveLeads(null)
@@ -115,7 +112,7 @@ export function ConsultationPage() {
 
       <CpfReuseModal
         isOpen={activeLeads !== null}
-        leadsFound={activeLeads?.length ?? 0}
+        leads={activeLeads ?? []}
         onContinue={handleContinueExisting}
         onStartNew={handleStartNew}
         busy={submitting}
