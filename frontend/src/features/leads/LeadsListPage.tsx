@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import type { LeadSummaryDto, PagedLeadsResponse } from '../../shared/api/types'
 import { Alert } from '../../shared/components/ui/Alert'
@@ -8,9 +8,10 @@ import { Input } from '../../shared/components/ui/Input'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
+import { resolveStepId, useLead } from '../../shared/leadContext'
 import { maskCpf } from '../../shared/utils/formatters'
 import { STEP_LABELS, STATUS_LABELS } from '../../shared/utils/leadLabels'
-import { listLeads, type LeadsFilters } from './leadsApi'
+import { getLeadById, listLeads, type LeadsFilters } from './leadsApi'
 import { LeadSummaryCard } from './components/LeadSummaryCard'
 import { LeadSummaryRow } from './components/LeadSummaryRow'
 import styles from './LeadsListPage.module.css'
@@ -41,6 +42,9 @@ function formatCpfFilter(value: string): string {
 }
 
 export function LeadsListPage() {
+  const navigate = useNavigate()
+  const { setLead, setStep } = useLead()
+
   const [filters, setFilters] = useState<LeadsFilters>({
     status: '',
     currentStep: '',
@@ -50,6 +54,24 @@ export function LeadsListPage() {
   const [response, setResponse] = useState<PagedLeadsResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [resumingId, setResumingId] = useState<string | null>(null)
+
+  const handleResume = useCallback(
+    async (leadId: string) => {
+      setResumingId(leadId)
+      setError(null)
+      try {
+        const lead = await getLeadById(leadId)
+        setLead(lead)
+        setStep(resolveStepId(lead))
+        navigate('/')
+      } catch (err) {
+        setError(getErrorMessage(err))
+        setResumingId(null)
+      }
+    },
+    [navigate, setLead, setStep],
+  )
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -149,7 +171,12 @@ export function LeadsListPage() {
           <>
             <div className={styles.mobileList}>
               {leads.map((lead) => (
-                <LeadListItem key={lead.id} lead={lead} />
+                <LeadListItem
+                  key={lead.id}
+                  lead={lead}
+                  onResume={handleResume}
+                  busy={resumingId === lead.id}
+                />
               ))}
             </div>
 
@@ -168,7 +195,13 @@ export function LeadsListPage() {
                 </thead>
                 <tbody>
                   {leads.map((lead) => (
-                    <LeadListItem key={lead.id} lead={lead} row />
+                    <LeadListItem
+                      key={lead.id}
+                      lead={lead}
+                      row
+                      onResume={handleResume}
+                      busy={resumingId === lead.id}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -207,12 +240,14 @@ export function LeadsListPage() {
 interface LeadListItemProps {
   lead: LeadSummaryDto
   row?: boolean
+  onResume: (leadId: string) => void
+  busy: boolean
 }
 
-function LeadListItem({ lead, row }: LeadListItemProps) {
+function LeadListItem({ lead, row, onResume, busy }: LeadListItemProps) {
   if (row) {
-    return <LeadSummaryRow lead={lead} onResume={() => {}} busy={false} />
+    return <LeadSummaryRow lead={lead} onResume={onResume} busy={busy} />
   }
 
-  return <LeadSummaryCard lead={lead} onResume={() => {}} busy={false} />
+  return <LeadSummaryCard lead={lead} onResume={onResume} busy={busy} />
 }
