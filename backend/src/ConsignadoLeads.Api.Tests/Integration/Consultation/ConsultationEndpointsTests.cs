@@ -90,6 +90,19 @@ public class ConsultationEndpointsTests : IClassFixture<LeadRecoveryWebApplicati
         Assert.Equal(0, await CountLeadsByCpfAsync("33333333333"));
     }
 
+    [Theory]
+    [InlineData("123")] // too short
+    [InlineData("123456789012")] // too long
+    [InlineData("1234567890a")] // non-digit
+    [InlineData("")] // empty
+    public async Task PostConsultation_WhenCpfMalformed_Returns400AndCreatesNoLead(string malformedCpf)
+    {
+        var response = await _client.PostAsJsonAsync("/leads/consultation", ValidRequestBody(malformedCpf));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(0, await CountLeadsByCpfAsync(malformedCpf));
+    }
+
     [Fact]
     public async Task PostConsultation_WhenMockOutcomeUnavailable_CreatesLeadWithUnavailableResult()
     {
