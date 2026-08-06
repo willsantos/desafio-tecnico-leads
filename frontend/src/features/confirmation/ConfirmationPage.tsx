@@ -6,6 +6,7 @@ import { Card } from '../../shared/components/ui/Card'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
+import { formatDateToBrazilian, maskCpf, maskPhone } from '../../shared/utils/formatters'
 import { confirmLead, retrySubmission } from './confirmationApi'
 import styles from './ConfirmationPage.module.css'
 
@@ -135,7 +136,19 @@ export function ConfirmationPage() {
                 <strong>{lead.identification.fullName}</strong>
               </Text>
               <Text variant="body">
+                CPF: <strong>{maskCpf(lead.identification.cpf)}</strong>
+              </Text>
+              <Text variant="body">
+                Nascimento: <strong>{formatDateToBrazilian(lead.identification.birthDate)}</strong>
+              </Text>
+              <Text variant="body">
+                Telefone: <strong>{maskPhone(lead.identification.phone)}</strong>
+              </Text>
+              <Text variant="body">
                 {lead.identification.documentType} {lead.identification.documentNumber}
+              </Text>
+              <Text variant="caption">
+                Emissão: {formatDateToBrazilian(lead.identification.issueDate)}
               </Text>
               <Text variant="caption">
                 Consulta: {lead.identification.query?.outcome ?? 'não realizada'}
@@ -151,6 +164,9 @@ export function ConfirmationPage() {
             <div className={styles.summaryBody}>
               <Text variant="body">
                 <strong>{lead.professionalData.company}</strong> — {lead.professionalData.role}
+              </Text>
+              <Text variant="caption">
+                Admissão: {formatDateToBrazilian(lead.professionalData.admissionDate)}
               </Text>
               <Text variant="caption">
                 Banco {lead.bankingData.bank}, ag. {lead.bankingData.agency}, conta {lead.bankingData.account}-
