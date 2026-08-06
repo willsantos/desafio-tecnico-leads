@@ -149,6 +149,41 @@ public class ProfessionalBankingDataEndpointsTests : IClassFixture<LeadRecoveryW
     }
 
     [Fact]
+    public async Task PutProfessionalBankingData_WithMissingRequiredField_Returns400WithDetail()
+    {
+        var leadId = await CreateLeadAsync();
+        var body = new
+        {
+            professionalData = new
+            {
+                employmentType = (string?)null,
+                company = "ACME",
+                registrationNumber = "REG-1",
+                role = "Analyst",
+                monthlyIncome = 5000m,
+                admissionDate = "2020-01-01",
+            },
+            bankingData = new
+            {
+                bank = "001",
+                agency = "1234",
+                account = "56789",
+                accountDigit = "0",
+                accountType = "checking",
+                accountHolder = "Ana Silva",
+                pixKey = "chave@pix.com",
+            },
+        };
+
+        var response = await _client.PutAsJsonAsync($"/leads/{leadId}/steps/professional-banking-data", body);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problemJson = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(problemJson);
+        Assert.Equal("Um ou mais campos da requisição são inválidos.", doc.RootElement.GetProperty("detail").GetString());
+    }
+
+    [Fact]
     public async Task PutProfessionalBankingData_WhenExpectedVersionMismatches_Returns409WithCurrentVersion()
     {
         var leadId = await CreateLeadAsync();
