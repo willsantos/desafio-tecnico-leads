@@ -1,3 +1,4 @@
+using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
 
 namespace ConsignadoLeads.Api.Features.Consultation;
@@ -11,7 +12,7 @@ public static class ConsultationEndpoints
             var errors = ConsultationValidator.Validate(request);
             if (errors.Count > 0)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["request"] = [.. errors] });
+                return errors.ToValidationProblem();
             }
 
             var dto = await handler.CreateAsync(request);
@@ -23,7 +24,7 @@ public static class ConsultationEndpoints
             var errors = ConsultationValidator.Validate(request);
             if (errors.Count > 0)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["request"] = [.. errors] });
+                return errors.ToValidationProblem();
             }
 
             var dto = await handler.UpdateAsync(id, request);

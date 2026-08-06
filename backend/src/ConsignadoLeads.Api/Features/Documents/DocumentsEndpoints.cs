@@ -1,3 +1,4 @@
+using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
 
 namespace ConsignadoLeads.Api.Features.Documents;
@@ -17,7 +18,7 @@ public static class DocumentsEndpoints
             var errors = DocumentsValidator.Validate(file, type, personalDocumentSubtype);
             if (errors.Count > 0)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["request"] = [.. errors] });
+                return errors.ToValidationProblem();
             }
 
             var dto = await handler.UploadAsync(id, file!, type, personalDocumentSubtype);
