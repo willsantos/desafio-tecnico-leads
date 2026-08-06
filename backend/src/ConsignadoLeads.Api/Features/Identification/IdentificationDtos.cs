@@ -10,9 +10,8 @@ public record AddressRequest(
     string State);
 
 /// <summary>
-/// Required fields are non-nullable so ASP.NET Core's JSON body binding rejects a payload
-/// missing any of them with a 400 automatically, matching the README's required-field list
-/// for this route without a hand-rolled validator (mirrors the Simulation slice's approach).
+/// Request body for the identification step. Field-presence is enforced by
+/// <see cref="IdentificationValidator"/>, not by JSON binding alone.
 /// </summary>
 public record IdentificationRequest(
     string FullName,

@@ -105,6 +105,61 @@ public class IdentificationEndpointsTests : IClassFixture<LeadRecoveryWebApplica
     }
 
     [Fact]
+    public async Task PutIdentification_WithMissingRequiredField_Returns400WithDetail()
+    {
+        var leadId = await CreateLeadAsync();
+        var body = new
+        {
+            fullName = (string?)null,
+            cpf = RandomCpf(),
+            birthDate = "1990-01-01",
+            email = "ana@example.com",
+            phone = "11999999999",
+            address = new { zipCode = "01000-000", street = "Rua A", number = "123", neighborhood = "Centro", city = "São Paulo", state = "SP" },
+            motherName = "Maria Silva",
+            maritalStatus = "single",
+            documentType = "CNH",
+            documentNumber = "AB123456",
+            issuingAuthority = "DETRAN",
+            issuingState = "SP",
+            issueDate = "2015-01-01",
+        };
+
+        var response = await _client.PutAsJsonAsync($"/leads/{leadId}/steps/identification", body);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problemJson = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(problemJson);
+        Assert.Equal("Um ou mais campos da requisição são inválidos.", doc.RootElement.GetProperty("detail").GetString());
+    }
+
+    [Fact]
+    public async Task PutIdentification_WithInvalidDocumentType_Returns400()
+    {
+        var leadId = await CreateLeadAsync();
+        var body = new
+        {
+            fullName = "Ana Silva",
+            cpf = RandomCpf(),
+            birthDate = "1990-01-01",
+            email = "ana@example.com",
+            phone = "11999999999",
+            address = new { zipCode = "01000-000", street = "Rua A", number = "123", neighborhood = "Centro", city = "São Paulo", state = "SP" },
+            motherName = "Maria Silva",
+            maritalStatus = "single",
+            documentType = "PASSPORT",
+            documentNumber = "AB123456",
+            issuingAuthority = "DETRAN",
+            issuingState = "SP",
+            issueDate = "2015-01-01",
+        };
+
+        var response = await _client.PutAsJsonAsync($"/leads/{leadId}/steps/identification", body);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PutIdentification_WhenExpectedVersionMismatches_Returns409WithCurrentVersion()
     {
         var leadId = await CreateLeadAsync();
