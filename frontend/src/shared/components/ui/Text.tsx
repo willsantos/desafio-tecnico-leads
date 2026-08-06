@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import styles from './Text.module.css'
 
 type TextVariant = 'display' | 'title' | 'subtitle' | 'body' | 'muted' | 'label' | 'caption'
-type TextElement = 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'label' | 'legend' | 'div'
+type TextElement = 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'label' | 'legend' | 'div' | 'dt' | 'dd'
 
 interface TextProps {
   children: ReactNode

@@ -136,6 +136,7 @@ export interface LeadDto {
 export interface LeadSummaryDto {
   id: string
   status: string
+  cpf: string
   progress: { currentStep: string }
   createdAt: string
   updatedAt: string
