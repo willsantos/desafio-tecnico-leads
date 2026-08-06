@@ -6,11 +6,11 @@ O fluxo de cadastro de empréstimo consignado tem 6 etapas; o cliente pode aband
 
 ## Goals
 
-- [ ] Implementar as 12 rotas do contrato (README seção 5) com shape de JSON, status codes e enums exatamente como especificado
-- [ ] Modelar `leads` + `lead_documents` no MongoDB com atomicidade por etapa, concorrência otimista e sem expor documentos Mongo diretamente na API
-- [ ] Frontend React navegável pelas 6 etapas com retomada por id, upload de documentos e resumo antes da confirmação
-- [ ] `docker compose up --build` sobe a stack sem passo manual, CI (`ci.yml`) permanece verde
-- [ ] Suíte de testes cobrindo os 8 casos mínimos da seção 8 do README
+- [x] Implementar as 12 rotas do contrato (README seção 5) com shape de JSON, status codes e enums exatamente como especificado
+- [x] Modelar `leads` + `lead_documents` no MongoDB com atomicidade por etapa, concorrência otimista e sem expor documentos Mongo diretamente na API
+- [x] Frontend React navegável pelas 6 etapas com retomada por id, upload de documentos e resumo antes da confirmação
+- [x] `docker compose up --build` sobe a stack sem passo manual, CI (`ci.yml`) permanece verde
+- [x] Suíte de testes cobrindo os 8 casos mínimos da seção 8 do README
 
 ## Out of Scope
 
@@ -276,85 +276,85 @@ O fluxo de cadastro de empréstimo consignado tem 6 etapas; o cliente pode aband
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| LEAD-01 | P1-1: Consulta | Design | Pending |
-| LEAD-02 | P1-1: Consulta | Design | Pending |
-| LEAD-03 | P1-1: Consulta | Design | Pending |
-| LEAD-04 | P1-1: Consulta | Design | Pending |
-| LEAD-05 | P1-1: Consulta | Design | Pending |
-| LEAD-06 | P1-1: Consulta | Design | Pending |
-| LEAD-07 | P1-1: Consulta | Design | Pending |
-| LEAD-08 | P1-2: Simulação | Design | Pending |
-| LEAD-09 | P1-2: Simulação | Design | Pending |
-| LEAD-10 | P1-2: Simulação | Design | Pending |
-| LEAD-11 | P1-2: Simulação | Design | Pending |
-| LEAD-12 | P1-2: Simulação | Design | Pending |
-| LEAD-13 | P1-2: Simulação | Design | Pending |
-| LEAD-14 | P1-2: Simulação | Design | Pending |
-| LEAD-15 | P1-2: Simulação | Design | Pending |
-| LEAD-16 | P1-3: Identificação | Design | Pending |
-| LEAD-17 | P1-3: Identificação | Design | Pending |
-| LEAD-18 | P1-3: Identificação | Design | Pending |
-| LEAD-19 | P1-3: Identificação | Design | Pending |
-| LEAD-20 | P1-3: Identificação | Design | Pending |
-| LEAD-21 | P1-3: Identificação | Design | Pending |
-| LEAD-22 | P1-4: Dados prof./bancários | Design | Pending |
-| LEAD-23 | P1-4: Dados prof./bancários | Design | Pending |
-| LEAD-24 | P1-4: Dados prof./bancários | Design | Pending |
-| LEAD-25 | P1-4: Dados prof./bancários | Design | Pending |
-| LEAD-26 | P1-5: Anexos | Design | Pending |
-| LEAD-27 | P1-5: Anexos | Design | Pending |
-| LEAD-28 | P1-5: Anexos | Design | Pending |
-| LEAD-29 | P1-5: Anexos | Design | Pending |
-| LEAD-30 | P1-5: Anexos | Design | Pending |
-| LEAD-31 | P1-5: Anexos | Design | Pending |
-| LEAD-32 | P1-5: Anexos | Design | Pending |
-| LEAD-33 | P1-5: Anexos | Design | Pending |
-| LEAD-34 | P1-5: Anexos | Design | Pending |
-| LEAD-35 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-36 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-37 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-38 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-39 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-40 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-41 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-42 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-43 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-44 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-45 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-46 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-47 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-48 | P1-6: Confirmação/retry | Design | Pending |
-| LEAD-49 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-50 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-51 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-52 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-53 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-54 | P1-7: Listagem/recuperação | Design | Pending |
-| LEAD-55 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-56 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-57 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-58 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-59 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-60 | P1-8: Erros/concorrência | Design | Pending |
-| LEAD-61 | P1-9: NFR transversais | Design | Pending |
-| LEAD-62 | P1-9: NFR transversais | Design | Pending |
-| LEAD-63 | P1-9: NFR transversais | Design | Pending |
-| LEAD-64 | P1-9: NFR transversais | Design | Pending |
-| LEAD-65 | P1-9: NFR transversais | Design | Pending |
+| LEAD-01 | P1-1: Consulta | Implemented | Verified |
+| LEAD-02 | P1-1: Consulta | Implemented | Verified |
+| LEAD-03 | P1-1: Consulta | Implemented | Verified |
+| LEAD-04 | P1-1: Consulta | Implemented | Verified |
+| LEAD-05 | P1-1: Consulta | Implemented | Verified |
+| LEAD-06 | P1-1: Consulta | Implemented | Verified |
+| LEAD-07 | P1-1: Consulta | Implemented | Verified |
+| LEAD-08 | P1-2: Simulação | Implemented | Verified |
+| LEAD-09 | P1-2: Simulação | Implemented | Verified |
+| LEAD-10 | P1-2: Simulação | Implemented | Verified |
+| LEAD-11 | P1-2: Simulação | Implemented | Verified |
+| LEAD-12 | P1-2: Simulação | Implemented | Verified |
+| LEAD-13 | P1-2: Simulação | Implemented | Verified |
+| LEAD-14 | P1-2: Simulação | Implemented | Verified |
+| LEAD-15 | P1-2: Simulação | Implemented | Verified |
+| LEAD-16 | P1-3: Identificação | Implemented | Verified |
+| LEAD-17 | P1-3: Identificação | Implemented | Verified |
+| LEAD-18 | P1-3: Identificação | Implemented | Verified |
+| LEAD-19 | P1-3: Identificação | Implemented | Verified |
+| LEAD-20 | P1-3: Identificação | Implemented | Verified |
+| LEAD-21 | P1-3: Identificação | Implemented | Verified |
+| LEAD-22 | P1-4: Dados prof./bancários | Implemented | Verified |
+| LEAD-23 | P1-4: Dados prof./bancários | Implemented | Verified |
+| LEAD-24 | P1-4: Dados prof./bancários | Implemented | Verified |
+| LEAD-25 | P1-4: Dados prof./bancários | Implemented | Verified |
+| LEAD-26 | P1-5: Anexos | Implemented | Verified |
+| LEAD-27 | P1-5: Anexos | Implemented | Verified |
+| LEAD-28 | P1-5: Anexos | Implemented | Verified |
+| LEAD-29 | P1-5: Anexos | Implemented | Verified |
+| LEAD-30 | P1-5: Anexos | Implemented | Verified |
+| LEAD-31 | P1-5: Anexos | Implemented | Verified |
+| LEAD-32 | P1-5: Anexos | Implemented | Verified |
+| LEAD-33 | P1-5: Anexos | Implemented | Verified |
+| LEAD-34 | P1-5: Anexos | Implemented | Verified |
+| LEAD-35 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-36 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-37 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-38 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-39 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-40 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-41 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-42 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-43 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-44 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-45 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-46 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-47 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-48 | P1-6: Confirmação/retry | Implemented | Verified |
+| LEAD-49 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-50 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-51 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-52 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-53 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-54 | P1-7: Listagem/recuperação | Implemented | Verified |
+| LEAD-55 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-56 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-57 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-58 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-59 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-60 | P1-8: Erros/concorrência | Implemented | Verified |
+| LEAD-61 | P1-9: NFR transversais | Implemented | Verified |
+| LEAD-62 | P1-9: NFR transversais | Implemented | Verified |
+| LEAD-63 | P1-9: NFR transversais | Implemented | Verified |
+| LEAD-64 | P1-9: NFR transversais | Implemented | Verified |
+| LEAD-65 | P1-9: NFR transversais | Implemented | Verified |
 | LEAD-66 | P2-1: Modal CPF | - | Pending |
 | LEAD-67 | P2-1: Modal CPF | - | Pending |
 | LEAD-68 | P2-1: Modal CPF | - | Pending |
 | LEAD-69 | P2-1: Modal CPF | - | Pending |
 | LEAD-70 | P2-2: Swagger | - | Pending |
 
-**Coverage:** 70 requisitos totais, 0 mapeados pra tasks ainda, 70 não-mapeados ⚠️ (normal nesta fase — Tasks vem depois de Design)
+**Coverage:** 70 requisitos totais, 70 mapeados e implementados, 0 não-mapeados. Verificado pelo Verifier independente (`.specs/features/lead-recovery/validation.md`, PASS).
 
 ---
 
 ## Success Criteria
 
-- [ ] Todas as 12 rotas do contrato implementadas com shape/status exatos da seção 5
-- [ ] `docker compose up --build` sobe stack completa sem passo manual; CI (`ci.yml`) verde
-- [ ] Suíte de testes cobre os 8 casos mínimos da seção 8 do README, incluindo teste de concorrência (duas confirmações simultâneas)
-- [ ] Nenhum CPF/dado bancário em texto claro nos logs
-- [ ] README final documenta modelagem NoSQL com trade-offs (seção 6 do desafio)
+- [x] Todas as 12 rotas do contrato implementadas com shape/status exatos da seção 5
+- [x] `docker compose up --build` sobe stack completa sem passo manual; CI (`ci.yml`) verde
+- [x] Suíte de testes cobre os 8 casos mínimos da seção 8 do README, incluindo teste de concorrência (duas confirmações simultâneas)
+- [x] Nenhum CPF/dado bancário em texto claro nos logs
+- [x] README final documenta modelagem NoSQL com trade-offs (seção 6 do desafio)

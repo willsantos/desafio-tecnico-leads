@@ -36,4 +36,11 @@
 
 ## Handoff
 
-[none yet — feature not started]
+- **Feature**: lead-recovery (`.specs/features/lead-recovery/`)
+- **Phase / Task**: Done — Execute complete (24/24 tasks), `/simplify` pass applied, Verifier PASS
+- **Completed**: T1-T24, all committed (see `tasks.md` checkboxes and `git log 3a311bc..HEAD`)
+- **In-progress**: none
+- **Next step**: Non-blocking follow-ups from `validation.md` are optional polish, not required for delivery — e.g. malformed-CPF test, identification-step concurrency race test, dead `SensitiveDataMasker` call site, exact `extensions.reasons` assertion. Otherwise feature is ready for submission.
+- **Blockers**: none
+- **Uncommitted files**: none
+- **Branch**: main
