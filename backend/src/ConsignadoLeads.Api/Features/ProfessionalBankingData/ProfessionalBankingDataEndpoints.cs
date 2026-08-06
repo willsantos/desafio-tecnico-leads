@@ -1,3 +1,5 @@
+using ConsignadoLeads.Api.Core.Dtos;
+
 namespace ConsignadoLeads.Api.Features.ProfessionalBankingData;
 
 public static class ProfessionalBankingDataEndpoints
@@ -8,7 +10,7 @@ public static class ProfessionalBankingDataEndpoints
         {
             var dto = await handler.UpdateAsync(id, request);
             return Results.Ok(dto);
-        });
+        }).Produces<LeadDto>(StatusCodes.Status200OK);
 
         return app;
     }

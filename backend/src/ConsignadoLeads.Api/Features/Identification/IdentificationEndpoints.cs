@@ -1,3 +1,5 @@
+using ConsignadoLeads.Api.Core.Dtos;
+
 namespace ConsignadoLeads.Api.Features.Identification;
 
 public static class IdentificationEndpoints
@@ -8,7 +10,7 @@ public static class IdentificationEndpoints
         {
             var dto = await handler.UpdateAsync(id, request);
             return Results.Ok(dto);
-        });
+        }).Produces<LeadDto>(StatusCodes.Status200OK);
 
         return app;
     }

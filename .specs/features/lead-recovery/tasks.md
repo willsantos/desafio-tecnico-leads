@@ -610,7 +610,7 @@ T23 → T24
 - Skill: `coding-guidelines`
 
 **Done when**:
-- [ ] `/swagger` reachable in development, lists all 12 contract routes with request/response schemas
+- [x] `/swagger` reachable in development, lists all 12 contract routes with request/response schemas
 
 **Tests**: none
 **Gate**: Build (backend)

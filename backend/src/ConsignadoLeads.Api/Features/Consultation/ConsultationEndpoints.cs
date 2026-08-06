@@ -1,3 +1,5 @@
+using ConsignadoLeads.Api.Core.Dtos;
+
 namespace ConsignadoLeads.Api.Features.Consultation;
 
 public static class ConsultationEndpoints
@@ -14,7 +16,7 @@ public static class ConsultationEndpoints
 
             var dto = await handler.CreateAsync(request);
             return Results.Created($"/leads/{dto.Id}", dto);
-        });
+        }).Produces<LeadDto>(StatusCodes.Status201Created);
 
         app.MapPut("/leads/{id}/steps/consultation", async (string id, ConsultationRequest request, ConsultationHandler handler) =>
         {
@@ -26,7 +28,7 @@ public static class ConsultationEndpoints
 
             var dto = await handler.UpdateAsync(id, request);
             return Results.Ok(dto);
-        });
+        }).Produces<LeadDto>(StatusCodes.Status200OK);
 
         return app;
     }

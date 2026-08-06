@@ -8,6 +8,7 @@ using ConsignadoLeads.Api.Features.Identification;
 using ConsignadoLeads.Api.Features.Leads;
 using ConsignadoLeads.Api.Features.ProfessionalBankingData;
 using ConsignadoLeads.Api.Features.Simulation;
+using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,11 +36,21 @@ builder.Services.AddCors(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "ConsignadoLeads API", Version = "v1" }));
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseRequestLogging();
 app.UseCors();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 await app.Services.GetRequiredService<MongoContext>().EnsureIndexesAsync();
 
