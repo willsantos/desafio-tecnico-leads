@@ -151,4 +151,20 @@ public class IdentificationEndpointsTests : IClassFixture<LeadRecoveryWebApplica
             Environment.SetEnvironmentVariable("ENABLE_TEST_ENDPOINTS", "true");
         }
     }
+
+    [Fact]
+    public async Task PutIdentification_TwoSimultaneousCallsWithSameExpectedVersion_ExactlyOneSucceedsTheOtherGets409()
+    {
+        var leadId = await CreateLeadAsync();
+
+        var firstTask = _client.PutAsJsonAsync($"/leads/{leadId}/steps/identification", ValidIdentificationBody(expectedVersion: 1));
+        var secondTask = _client.PutAsJsonAsync($"/leads/{leadId}/steps/identification", ValidIdentificationBody(expectedVersion: 1));
+        var responses = await Task.WhenAll(firstTask, secondTask);
+
+        var conflictCount = responses.Count(r => r.StatusCode == HttpStatusCode.Conflict);
+        var succeededCount = responses.Count(r => r.StatusCode == HttpStatusCode.OK);
+
+        Assert.Equal(1, conflictCount);
+        Assert.Equal(1, succeededCount);
+    }
 }
