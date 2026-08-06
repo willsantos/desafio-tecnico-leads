@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 5,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "spec_precision_gap::for payload bearing 422 409 responses parse the problem details extensions array and assert its exact contents not a substring match on the raw json body",
+      "text": "For payload-bearing 422/409 responses, parse the Problem Details extensions array and assert its exact contents, not a substring match on the raw JSON body.",
+      "signal": "spec_precision_gap",
+      "scope": "backend/tests",
+      "status": "candidate",
+      "features": [
+        "lead-recovery"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md#P1-6-AC2 - ConfirmationEndpointsTests.cs:114 (backend/tests)"
+      ],
+      "created": "2026-08-06T01:11:16Z",
+      "last_seen": "2026-08-06T01:11:16Z"
+    },
+    {
+      "id": "L-002",
+      "key": "spec_precision_gap::when a spec requires an atomic counter to increment by exactly 1 per update add a dedicated test asserting the exact before after delta not just that a downstream conflict check works",
+      "text": "When a spec requires an atomic counter to increment by exactly 1 per update, add a dedicated test asserting the exact before/after delta, not just that a downstream conflict check works.",
+      "signal": "spec_precision_gap",
+      "scope": "backend/tests",
+      "status": "candidate",
+      "features": [
+        "lead-recovery"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md#P1-8 - MongoContext.cs:96-98 (backend/tests)"
+      ],
+      "created": "2026-08-06T01:11:16Z",
+      "last_seen": "2026-08-06T01:11:16Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::every named edge case in spec md needs its own dedicated test even when a more general validation test already covers the same code path indirectly",
+      "text": "Every named edge case in spec.md needs its own dedicated test, even when a more general validation test already covers the same code path indirectly.",
+      "signal": "ac_gap",
+      "scope": "backend/tests",
+      "status": "candidate",
+      "features": [
+        "lead-recovery"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "spec.md#Edge-Cases (malformed CPF -> 400) (backend/tests)"
+      ],
+      "created": "2026-08-06T01:11:24Z",
+      "last_seen": "2026-08-06T01:11:24Z"
+    },
+    {
+      "id": "L-004",
+      "key": "ac_gap::when spec md names a specific route for a concurrency edge case add a task whenall race test for that exact route not just for the route where concurrency risk is highest",
+      "text": "When spec.md names a specific route for a concurrency edge case, add a Task.WhenAll race test for that exact route, not just for the route where concurrency risk is highest.",
+      "signal": "ac_gap",
+      "scope": "backend/tests",
+      "status": "candidate",
+      "features": [
+        "lead-recovery"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "spec.md#Edge-Cases (simultaneous PUT steps/identification same expectedVersion) (backend/tests)"
+      ],
+      "created": "2026-08-06T01:11:24Z",
+      "last_seen": "2026-08-06T01:11:24Z"
+    }
+  ]
+}
