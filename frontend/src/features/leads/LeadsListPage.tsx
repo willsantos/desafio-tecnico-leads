@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import type { LeadSummaryDto, PagedLeadsResponse } from '../../shared/api/types'
 import { Alert } from '../../shared/components/ui/Alert'
@@ -43,7 +43,7 @@ function formatCpfFilter(value: string): string {
 
 export function LeadsListPage() {
   const navigate = useNavigate()
-  const { setLead, setStep } = useLead()
+  const { setLead, setStep, resetLead } = useLead()
 
   const [filters, setFilters] = useState<LeadsFilters>({
     status: '',
@@ -55,6 +55,11 @@ export function LeadsListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resumingId, setResumingId] = useState<string | null>(null)
+
+  const handleNewProposal = useCallback(() => {
+    resetLead()
+    navigate('/proposta')
+  }, [navigate, resetLead])
 
   const handleResume = useCallback(
     async (leadId: string) => {
@@ -121,9 +126,9 @@ export function LeadsListPage() {
         <Text variant="title" as="h2">
           Propostas em andamento
         </Text>
-        <Link to="/proposta" className={styles.newProposalButton}>
+        <Button onClick={handleNewProposal} className={styles.newProposalButton}>
           Nova proposta
-        </Link>
+        </Button>
       </div>
 
       <div className={styles.filters}>
@@ -145,7 +150,7 @@ export function LeadsListPage() {
           label="CPF"
           name="cpf"
           value={maskCpf(filters.cpf ?? '')}
-          onValueChange={handleCpfChange}
+          onChange={(e) => handleCpfChange(e.target.value)}
           placeholder="000.000.000-00"
           maxLength={14}
         />
@@ -161,9 +166,9 @@ export function LeadsListPage() {
           <Alert variant="info" title="Nenhuma proposta encontrada">
             <Text variant="body">
               Não encontramos propostas com os filtros selecionados.{' '}
-              <Link to="/proposta" className={styles.link}>
+              <button type="button" onClick={handleNewProposal} className={styles.linkButton}>
                 Inicie uma nova proposta
-              </Link>
+              </button>
               .
             </Text>
           </Alert>

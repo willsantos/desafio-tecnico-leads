@@ -13,25 +13,21 @@
 }
 
 .newProposalButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-tight);
-  color: var(--color-text-on-primary);
-  background-color: var(--color-primary-700);
-  border: 1px solid var(--color-primary-700);
-  text-decoration: none;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  font-size: var(--font-size-base) !important;
 }
 
-.newProposalButton:hover {
-  background-color: var(--color-primary-800);
-  border-color: var(--color-primary-800);
+.linkButton {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-primary-700);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  color: var(--color-primary-800);
 }
 
 .filters {
