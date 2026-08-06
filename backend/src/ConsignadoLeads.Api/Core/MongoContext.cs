@@ -1,3 +1,4 @@
+using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Models;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
@@ -54,5 +55,61 @@ public class MongoContext
             new(Builders<LeadDocumentEntity>.IndexKeys.Ascending(doc => doc.LeadId).Ascending(doc => doc.Status)),
         };
         await LeadDocuments.Indexes.CreateManyAsync(leadDocumentIndexes, cancellationToken);
+    }
+
+    /// <summary>Fetches a lead by id or throws <see cref="LeadNotFoundException"/>. Shared by every
+    /// slice that needs the full lead document (as opposed to a lightweight existence check).</summary>
+    public async Task<Lead> GetLeadOrThrowAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await Leads.Find(l => l.Id == id).FirstOrDefaultAsync(cancellationToken)
+            ?? throw new LeadNotFoundException(id);
+    }
+
+    /// <summary>Active (non-deleted, non-replaced) documents for a lead, optionally narrowed to one
+    /// <paramref name="type"/>. Shared by Confirmation, Documents and Leads — the "active document"
+    /// predicate is defined once here instead of re-derived per slice.</summary>
+    public async Task<List<LeadDocumentEntity>> GetActiveDocumentsAsync(string leadId, string? type = null, CancellationToken cancellationToken = default)
+    {
+        var filterBuilder = Builders<LeadDocumentEntity>.Filter;
+        var filter = filterBuilder.And(
+            filterBuilder.Eq(d => d.LeadId, leadId),
+            filterBuilder.Ne(d => d.Status, "deleted"),
+            filterBuilder.Ne(d => d.Status, "replaced"));
+        if (type is not null)
+        {
+            filter = filterBuilder.And(filter, filterBuilder.Eq(d => d.Type, type));
+        }
+
+        return await LeadDocuments.Find(filter).ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Shared optimistic-concurrency update (AD-004): builds the id(+version) filter, applies
+    /// <paramref name="update"/> atomically via <c>findOneAndUpdate</c>, and disambiguates a miss
+    /// into <see cref="LeadNotFoundException"/> (id doesn't exist) vs <see cref="VersionConflictException"/>
+    /// (id exists, version diverged) — used by every <c>PUT /steps/*</c> handler that accepts an
+    /// optional <c>expectedVersion</c>.
+    /// </summary>
+    public async Task<Lead> UpdateWithVersionCheckAsync(string id, int? expectedVersion, UpdateDefinition<Lead> update, CancellationToken cancellationToken = default)
+    {
+        var filterBuilder = Builders<Lead>.Filter;
+        var filter = expectedVersion is int version
+            ? filterBuilder.And(filterBuilder.Eq(l => l.Id, id), filterBuilder.Eq(l => l.Version, version))
+            : filterBuilder.Eq(l => l.Id, id);
+
+        var options = new FindOneAndUpdateOptions<Lead> { ReturnDocument = ReturnDocument.After };
+        var updated = await Leads.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
+        if (updated is not null)
+        {
+            return updated;
+        }
+
+        var existing = await Leads.Find(l => l.Id == id).FirstOrDefaultAsync(cancellationToken);
+        if (existing is null)
+        {
+            throw new LeadNotFoundException(id);
+        }
+
+        throw new VersionConflictException(expectedVersion!.Value, existing.Version);
     }
 }

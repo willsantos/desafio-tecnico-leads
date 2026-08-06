@@ -1,6 +1,5 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
-using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Models;
 using MongoDB.Driver;
 
@@ -33,11 +32,6 @@ public class ProfessionalBankingDataHandler(MongoContext mongo)
             PixKey = request.BankingData.PixKey,
         };
 
-        var filterBuilder = Builders<Lead>.Filter;
-        var filter = request.ExpectedVersion is int expectedVersion
-            ? filterBuilder.And(filterBuilder.Eq(l => l.Id, id), filterBuilder.Eq(l => l.Version, expectedVersion))
-            : filterBuilder.Eq(l => l.Id, id);
-
         // Sets only the professionalData/bankingData/progress/version/updatedAt fields —
         // never touches consultation/simulations/identification, which stay untouched on the
         // document (spec P1-4 AC1, P1-8 AC4).
@@ -51,20 +45,7 @@ public class ProfessionalBankingDataHandler(MongoContext mongo)
             .Set(l => l.UpdatedAt, now)
             .Inc(l => l.Version, 1);
 
-        var options = new FindOneAndUpdateOptions<Lead> { ReturnDocument = ReturnDocument.After };
-        var updated = await mongo.Leads.FindOneAndUpdateAsync(filter, update, options);
-
-        if (updated is not null)
-        {
-            return LeadMapper.ToDto(updated);
-        }
-
-        var existing = await mongo.Leads.Find(l => l.Id == id).FirstOrDefaultAsync();
-        if (existing is null)
-        {
-            throw new LeadNotFoundException(id);
-        }
-
-        throw new VersionConflictException(request.ExpectedVersion!.Value, existing.Version);
+        var updated = await mongo.UpdateWithVersionCheckAsync(id, request.ExpectedVersion, update);
+        return LeadMapper.ToDto(updated);
     }
 }

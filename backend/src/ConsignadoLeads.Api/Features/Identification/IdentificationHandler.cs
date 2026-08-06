@@ -1,6 +1,5 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
-using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Models;
 using MongoDB.Driver;
 
@@ -42,11 +41,6 @@ public class IdentificationHandler(MongoContext mongo, MockOutcomeResolver mockO
             Query = new IdentificationQuery { Outcome = IdentificationMock.Check(outcome) },
         };
 
-        var filterBuilder = Builders<Lead>.Filter;
-        var filter = request.ExpectedVersion is int expectedVersion
-            ? filterBuilder.And(filterBuilder.Eq(l => l.Id, id), filterBuilder.Eq(l => l.Version, expectedVersion))
-            : filterBuilder.Eq(l => l.Id, id);
-
         var update = Builders<Lead>.Update
             .Set(l => l.Identification, identification)
             .Set(l => l.Progress.CurrentStep, "identification")
@@ -56,20 +50,7 @@ public class IdentificationHandler(MongoContext mongo, MockOutcomeResolver mockO
             .Set(l => l.UpdatedAt, now)
             .Inc(l => l.Version, 1);
 
-        var options = new FindOneAndUpdateOptions<Lead> { ReturnDocument = ReturnDocument.After };
-        var updated = await mongo.Leads.FindOneAndUpdateAsync(filter, update, options);
-
-        if (updated is not null)
-        {
-            return LeadMapper.ToDto(updated);
-        }
-
-        var existing = await mongo.Leads.Find(l => l.Id == id).FirstOrDefaultAsync();
-        if (existing is null)
-        {
-            throw new LeadNotFoundException(id);
-        }
-
-        throw new VersionConflictException(request.ExpectedVersion!.Value, existing.Version);
+        var updated = await mongo.UpdateWithVersionCheckAsync(id, request.ExpectedVersion, update);
+        return LeadMapper.ToDto(updated);
     }
 }

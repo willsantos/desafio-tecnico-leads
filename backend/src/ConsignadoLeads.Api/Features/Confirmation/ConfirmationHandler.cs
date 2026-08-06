@@ -12,11 +12,13 @@ public class ConfirmationHandler(MongoContext mongo, MockOutcomeResolver mockOut
 
     public async Task<ConfirmationResult> ConfirmAsync(string id, string? mockOutcome)
     {
-        var priorLead = await AcquireMutexAsync(id);
-
-        var activeDocuments = await mongo.LeadDocuments
-            .Find(d => d.LeadId == id && d.Status != "deleted" && d.Status != "replaced")
-            .ToListAsync();
+        // The mutex acquisition and the active-documents lookup are independent (the latter
+        // only needs `id`) — run them concurrently instead of serially.
+        var mutexTask = AcquireMutexAsync(id);
+        var documentsTask = mongo.GetActiveDocumentsAsync(id);
+        await Task.WhenAll(mutexTask, documentsTask);
+        var priorLead = await mutexTask;
+        var activeDocuments = await documentsTask;
 
         var reasons = PendingRequirementsValidator.Validate(priorLead, activeDocuments);
         if (reasons.Count > 0)
@@ -33,8 +35,7 @@ public class ConfirmationHandler(MongoContext mongo, MockOutcomeResolver mockOut
 
     public async Task<ConfirmationResult> RetrySubmissionAsync(string id)
     {
-        var lead = await mongo.Leads.Find(l => l.Id == id).FirstOrDefaultAsync()
-            ?? throw new LeadNotFoundException(id);
+        var lead = await mongo.GetLeadOrThrowAsync(id);
 
         if (lead.Confirmation.FinalRegistration is not null && !string.IsNullOrEmpty(lead.Confirmation.FinalRegistration.RegistrationId))
         {

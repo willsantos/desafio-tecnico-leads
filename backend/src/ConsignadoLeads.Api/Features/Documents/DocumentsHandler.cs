@@ -24,18 +24,13 @@ public class DocumentsHandler(MongoContext mongo)
             throw new LeadNotFoundException(leadId);
         }
 
-        ObjectId gridFsFileId;
-        await using (var stream = file.OpenReadStream())
-        {
-            gridFsFileId = await mongo.Files.UploadFromStreamAsync(
-                file.FileName,
-                stream,
-                new GridFSUploadOptions { Metadata = new BsonDocument { { "contentType", file.ContentType } } });
-        }
-
-        var previous = await mongo.LeadDocuments
-            .Find(d => d.LeadId == leadId && d.Type == type && d.Status != "deleted" && d.Status != "replaced")
-            .FirstOrDefaultAsync();
+        // The "previous same-type document" lookup doesn't depend on the GridFS upload's
+        // result (only on leadId/type) — run them concurrently instead of serially.
+        var uploadTask = UploadToGridFsAsync(file);
+        var previousTask = mongo.GetActiveDocumentsAsync(leadId, type);
+        await Task.WhenAll(uploadTask, previousTask);
+        var gridFsFileId = await uploadTask;
+        var previous = (await previousTask).FirstOrDefault();
 
         var entity = new LeadDocumentEntity
         {
@@ -71,10 +66,7 @@ public class DocumentsHandler(MongoContext mongo)
             throw new LeadNotFoundException(leadId);
         }
 
-        var documents = await mongo.LeadDocuments
-            .Find(d => d.LeadId == leadId && d.Status != "deleted" && d.Status != "replaced")
-            .ToListAsync();
-
+        var documents = await mongo.GetActiveDocumentsAsync(leadId);
         return documents.Select(DocumentMapper.ToDto).ToList();
     }
 
@@ -98,5 +90,14 @@ public class DocumentsHandler(MongoContext mongo)
         }
 
         throw new DocumentNotFoundException(documentId);
+    }
+
+    private async Task<ObjectId> UploadToGridFsAsync(IFormFile file)
+    {
+        await using var stream = file.OpenReadStream();
+        return await mongo.Files.UploadFromStreamAsync(
+            file.FileName,
+            stream,
+            new GridFSUploadOptions { Metadata = new BsonDocument { { "contentType", file.ContentType } } });
     }
 }

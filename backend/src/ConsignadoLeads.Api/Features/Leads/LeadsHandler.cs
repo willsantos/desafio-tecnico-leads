@@ -1,6 +1,5 @@
 using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
-using ConsignadoLeads.Api.Core.Exceptions;
 using ConsignadoLeads.Api.Core.Models;
 using MongoDB.Driver;
 
@@ -42,13 +41,17 @@ public class LeadsHandler(MongoContext mongo)
 
         var filter = filters.Count > 0 ? filterBuilder.And(filters) : filterBuilder.Empty;
 
-        var totalItems = await mongo.Leads.CountDocumentsAsync(filter);
-        var leads = await mongo.Leads
+        // Independent queries against the same filter — run concurrently instead of serially.
+        var countTask = mongo.Leads.CountDocumentsAsync(filter);
+        var findTask = mongo.Leads
             .Find(filter)
             .SortByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
+        await Task.WhenAll(countTask, findTask);
+        var totalItems = await countTask;
+        var leads = await findTask;
 
         var totalPages = totalItems == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)pageSize);
 
@@ -57,12 +60,13 @@ public class LeadsHandler(MongoContext mongo)
 
     public async Task<LeadDto> GetByIdAsync(string id)
     {
-        var lead = await mongo.Leads.Find(l => l.Id == id).FirstOrDefaultAsync()
-            ?? throw new LeadNotFoundException(id);
-
-        var activeDocuments = await mongo.LeadDocuments
-            .Find(d => d.LeadId == id && d.Status != "deleted" && d.Status != "replaced")
-            .ToListAsync();
+        // The documents lookup doesn't depend on the lead fetch's result (only on `id`) —
+        // run them concurrently instead of serially.
+        var leadTask = mongo.GetLeadOrThrowAsync(id);
+        var documentsTask = mongo.GetActiveDocumentsAsync(id);
+        await Task.WhenAll(leadTask, documentsTask);
+        var lead = await leadTask;
+        var activeDocuments = await documentsTask;
 
         return LeadMapper.ToDto(lead, activeDocuments.Select(DocumentMapper.ToDto).ToList());
     }
