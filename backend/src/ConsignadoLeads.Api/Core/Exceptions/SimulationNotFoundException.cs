@@ -6,7 +6,7 @@ namespace ConsignadoLeads.Api.Core.Exceptions;
 /// different 404 causes. Maps to 404.
 /// </summary>
 public class SimulationNotFoundException(string simulationId)
-    : Exception($"Simulação '{simulationId}' não encontrada.")
+    : EntityNotFoundException(simulationId, $"Simulação '{simulationId}' não encontrada.")
 {
-    public string SimulationId { get; } = simulationId;
+    public string SimulationId => EntityId;
 }
