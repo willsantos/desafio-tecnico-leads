@@ -46,6 +46,7 @@ public class LeadsHandler(MongoContext mongo)
         var findTask = mongo.Leads
             .Find(filter)
             .SortByDescending(l => l.CreatedAt)
+            .ThenByDescending(l => l.Id)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
