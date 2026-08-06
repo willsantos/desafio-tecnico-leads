@@ -7,7 +7,7 @@ import { ProfessionalBankingDataPage } from './features/professionalBankingData/
 import { SimulationPage } from './features/simulation/SimulationPage'
 import type { ProgressDto } from './shared/api/types'
 import { Stepper, type StepperStep } from './shared/components/Stepper'
-import { LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
+import { CURRENT_STEP_TO_STEP_ID, LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
 
 const STEP_LABELS: Record<StepId, string> = {
   consultation: 'Consulta',
@@ -36,10 +36,9 @@ const STEPPER_STEPS: StepperStep[] = STEP_IDS.map((id) => ({ id, label: STEP_LAB
 function deriveCompletedStepIds(step: StepId, progress: ProgressDto | null, hasFinalRegistration: boolean): Set<StepId> {
   const completed = new Set<StepId>()
   const backendCompleted = progress?.completedSteps ?? []
-  if (backendCompleted.includes('consultation')) completed.add('consultation')
-  if (backendCompleted.includes('simulation')) completed.add('simulation')
-  if (backendCompleted.includes('identification')) completed.add('identification')
-  if (backendCompleted.includes('professional-banking-data')) completed.add('professionalBankingData')
+  for (const [backendStep, stepId] of Object.entries(CURRENT_STEP_TO_STEP_ID)) {
+    if (backendCompleted.includes(backendStep)) completed.add(stepId)
+  }
 
   const currentIndex = STEP_IDS.indexOf(step)
   STEP_IDS.slice(0, currentIndex).forEach((id) => completed.add(id))

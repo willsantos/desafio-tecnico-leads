@@ -16,7 +16,9 @@ export type StepId = (typeof STEP_IDS)[number]
 
 // `progress.currentStep` only ever holds one of these 4 values (backend never advances it past
 // "professional-banking-data" — documents/confirmation have no step-tracking field of their own).
-const CURRENT_STEP_TO_STEP_ID: Record<string, StepId> = {
+// Exported so App.tsx's `deriveCompletedStepIds` can reuse the same mapping instead of
+// re-deriving it as a second, independently-drifting copy.
+export const CURRENT_STEP_TO_STEP_ID: Record<string, StepId> = {
   consultation: 'consultation',
   simulation: 'simulation',
   identification: 'identification',
