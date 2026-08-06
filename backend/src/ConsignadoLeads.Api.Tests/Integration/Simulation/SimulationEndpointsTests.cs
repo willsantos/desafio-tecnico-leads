@@ -82,6 +82,20 @@ public class SimulationEndpointsTests : IClassFixture<LeadRecoveryWebApplication
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(0, 24)]
+    [InlineData(-1, 24)]
+    [InlineData(10000, 0)]
+    [InlineData(10000, -1)]
+    public async Task PostSimulation_WithInvalidInput_Returns400(decimal requestedAmount, int installments)
+    {
+        var leadId = await CreateLeadWithConsultationAsync();
+
+        var response = await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount, installments });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Fact]
     public async Task PostSimulation_WhenConsultationNotCompleted_Returns409()
     {

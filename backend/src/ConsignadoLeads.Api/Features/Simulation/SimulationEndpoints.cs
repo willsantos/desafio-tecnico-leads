@@ -1,3 +1,4 @@
+using ConsignadoLeads.Api.Core;
 using ConsignadoLeads.Api.Core.Dtos;
 
 namespace ConsignadoLeads.Api.Features.Simulation;
@@ -8,6 +9,12 @@ public static class SimulationEndpoints
     {
         app.MapPost("/leads/{id}/steps/simulation", async (string id, CreateSimulationRequest request, SimulationHandler handler) =>
         {
+            var errors = SimulationValidator.Validate(request);
+            if (errors.Count > 0)
+            {
+                return errors.ToValidationProblem();
+            }
+
             var dto = await handler.CreateAsync(id, request);
             return Results.Created($"/leads/{id}/steps/simulation/{dto.Id}", dto);
         }).Produces<SimulationDto>(StatusCodes.Status201Created);
