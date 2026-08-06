@@ -1,4 +1,6 @@
 import { useMemo, type ComponentType } from 'react'
+import { Route, Routes } from 'react-router-dom'
+import { LeadsListPage } from './features/leads/LeadsListPage'
 import { ConfirmationPage } from './features/confirmation/ConfirmationPage'
 import { ConsultationPage } from './features/consultation/ConsultationPage'
 import { DocumentsPage } from './features/documents/DocumentsPage'
@@ -6,6 +8,7 @@ import { IdentificationPage } from './features/identification/IdentificationPage
 import { ProfessionalBankingDataPage } from './features/professionalBankingData/ProfessionalBankingDataPage'
 import { SimulationPage } from './features/simulation/SimulationPage'
 import type { ProgressDto } from './shared/api/types'
+import { Header } from './shared/components/layout/Header'
 import { Stepper, type StepperStep } from './shared/components/Stepper'
 import { Text } from './shared/components/ui/Text'
 import { CURRENT_STEP_TO_STEP_ID, LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
@@ -49,7 +52,7 @@ function deriveCompletedStepIds(step: StepId, progress: ProgressDto | null, hasF
   return completed
 }
 
-function AppShell() {
+function WizardPage() {
   const { lead, step, setStep } = useLead()
 
   const completedStepIds = useMemo(
@@ -69,6 +72,22 @@ function AppShell() {
   const StepPage = STEP_PAGES[step]
 
   return (
+    <>
+      <Stepper
+        steps={STEPPER_STEPS}
+        currentStepId={step}
+        completedStepIds={completedStepIds}
+        onStepClick={lead ? handleStepClick : undefined}
+      />
+      <section className={styles.content}>
+        <StepPage />
+      </section>
+    </>
+  )
+}
+
+function AppShell() {
+  return (
     <div className={styles.layout}>
       <header className={styles.header}>
         <Text variant="display" as="h1" className={styles.title}>
@@ -78,16 +97,12 @@ function AppShell() {
           Empréstimo Consignado
         </Text>
       </header>
+      <Header />
       <main className={styles.main}>
-        <Stepper
-          steps={STEPPER_STEPS}
-          currentStepId={step}
-          completedStepIds={completedStepIds}
-          onStepClick={lead ? handleStepClick : undefined}
-        />
-        <section className={styles.content}>
-          <StepPage />
-        </section>
+        <Routes>
+          <Route path="/" element={<WizardPage />} />
+          <Route path="/leads" element={<LeadsListPage />} />
+        </Routes>
       </main>
     </div>
   )
