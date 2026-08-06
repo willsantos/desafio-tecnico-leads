@@ -115,7 +115,7 @@ public static class LeadMapper
         return new ConsultationDto(input, result);
     }
 
-    private static SimulationDto MapSimulation(Simulation simulation) => new(
+    public static SimulationDto MapSimulation(Simulation simulation) => new(
         simulation.Id,
         simulation.RequestedAmount,
         simulation.Installments,

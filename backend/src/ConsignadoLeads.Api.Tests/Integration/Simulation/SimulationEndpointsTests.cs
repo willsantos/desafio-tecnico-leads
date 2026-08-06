@@ -68,7 +68,7 @@ public class SimulationEndpointsTests : IClassFixture<LeadRecoveryWebApplication
         var response = await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount = 10000m, installments = 24 });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var dto = await response.Content.ReadFromJsonAsync<SimulationResponseDto>();
+        var dto = await response.Content.ReadFromJsonAsync<SimulationDto>();
         Assert.Equal(516.81m, dto!.InstallmentAmount);
         Assert.Equal(12403.44m, dto.TotalAmount);
         Assert.True(dto.Selected);
@@ -97,10 +97,10 @@ public class SimulationEndpointsTests : IClassFixture<LeadRecoveryWebApplication
     {
         var leadId = await CreateLeadWithConsultationAsync();
         var firstResponse = await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount = 10000m, installments = 24 });
-        var first = await firstResponse.Content.ReadFromJsonAsync<SimulationResponseDto>();
+        var first = await firstResponse.Content.ReadFromJsonAsync<SimulationDto>();
 
         var secondResponse = await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount = 5000m, installments = 12 });
-        var second = await secondResponse.Content.ReadFromJsonAsync<SimulationResponseDto>();
+        var second = await secondResponse.Content.ReadFromJsonAsync<SimulationDto>();
 
         Assert.True(second!.Selected);
 
@@ -119,13 +119,13 @@ public class SimulationEndpointsTests : IClassFixture<LeadRecoveryWebApplication
     {
         var leadId = await CreateLeadWithConsultationAsync();
         var firstResponse = await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount = 10000m, installments = 24 });
-        var first = await firstResponse.Content.ReadFromJsonAsync<SimulationResponseDto>();
+        var first = await firstResponse.Content.ReadFromJsonAsync<SimulationDto>();
         await _client.PostAsJsonAsync($"/leads/{leadId}/steps/simulation", new { requestedAmount = 5000m, installments = 12 });
 
         var selectResponse = await _client.PatchAsync($"/leads/{leadId}/steps/simulation/{first!.Id}/select", null);
 
         Assert.Equal(HttpStatusCode.OK, selectResponse.StatusCode);
-        var selected = await selectResponse.Content.ReadFromJsonAsync<SimulationResponseDto>();
+        var selected = await selectResponse.Content.ReadFromJsonAsync<SimulationDto>();
         Assert.True(selected!.Selected);
         Assert.Equal(first.InstallmentAmount, selected.InstallmentAmount);
         Assert.Equal(first.TotalAmount, selected.TotalAmount);
