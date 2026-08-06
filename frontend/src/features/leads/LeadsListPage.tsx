@@ -64,7 +64,7 @@ export function LeadsListPage() {
         const lead = await getLeadById(leadId)
         setLead(lead)
         setStep(resolveStepId(lead))
-        navigate('/')
+        navigate('/proposta')
       } catch (err) {
         setError(getErrorMessage(err))
         setResumingId(null)
@@ -121,7 +121,7 @@ export function LeadsListPage() {
         <Text variant="title" as="h2">
           Propostas em andamento
         </Text>
-        <Link to="/" className={styles.newProposalButton}>
+        <Link to="/proposta" className={styles.newProposalButton}>
           Nova proposta
         </Link>
       </div>
@@ -161,7 +161,7 @@ export function LeadsListPage() {
           <Alert variant="info" title="Nenhuma proposta encontrada">
             <Text variant="body">
               Não encontramos propostas com os filtros selecionados.{' '}
-              <Link to="/" className={styles.link}>
+              <Link to="/proposta" className={styles.link}>
                 Inicie uma nova proposta
               </Link>
               .

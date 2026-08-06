@@ -1,5 +1,5 @@
-import { useMemo, type ComponentType } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { useEffect, useMemo, type ComponentType } from 'react'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { LeadsListPage } from './features/leads/LeadsListPage'
 import { ConfirmationPage } from './features/confirmation/ConfirmationPage'
 import { ConsultationPage } from './features/consultation/ConsultationPage'
@@ -8,7 +8,6 @@ import { IdentificationPage } from './features/identification/IdentificationPage
 import { ProfessionalBankingDataPage } from './features/professionalBankingData/ProfessionalBankingDataPage'
 import { SimulationPage } from './features/simulation/SimulationPage'
 import type { ProgressDto } from './shared/api/types'
-import { Header } from './shared/components/layout/Header'
 import { Stepper, type StepperStep } from './shared/components/Stepper'
 import { Text } from './shared/components/ui/Text'
 import { CURRENT_STEP_TO_STEP_ID, LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
@@ -53,7 +52,14 @@ function deriveCompletedStepIds(step: StepId, progress: ProgressDto | null, hasF
 }
 
 function WizardPage() {
-  const { lead, step, setStep } = useLead()
+  const { lead, step, setStep, resetLead } = useLead()
+
+  useEffect(() => {
+    // When opening the wizard without a loaded lead, start a fresh proposal.
+    if (!lead) {
+      resetLead()
+    }
+  }, [lead, resetLead])
 
   const completedStepIds = useMemo(
     () => deriveCompletedStepIds(step, lead?.progress ?? null, Boolean(lead?.confirmation.finalRegistration)),
@@ -72,7 +78,12 @@ function WizardPage() {
   const StepPage = STEP_PAGES[step]
 
   return (
-    <>
+    <div className={styles.wizardWrapper}>
+      <div className={styles.wizardHeader}>
+        <Link to="/" className={styles.backLink}>
+          ← Voltar para propostas
+        </Link>
+      </div>
       <Stepper
         steps={STEPPER_STEPS}
         currentStepId={step}
@@ -82,7 +93,7 @@ function WizardPage() {
       <section className={styles.content}>
         <StepPage />
       </section>
-    </>
+    </div>
   )
 }
 
@@ -97,11 +108,11 @@ function AppShell() {
           Empréstimo Consignado
         </Text>
       </header>
-      <Header />
       <main className={styles.main}>
         <Routes>
-          <Route path="/" element={<WizardPage />} />
-          <Route path="/leads" element={<LeadsListPage />} />
+          <Route path="/" element={<LeadsListPage />} />
+          <Route path="/leads" element={<Navigate to="/" replace />} />
+          <Route path="/proposta" element={<WizardPage />} />
         </Routes>
       </main>
     </div>

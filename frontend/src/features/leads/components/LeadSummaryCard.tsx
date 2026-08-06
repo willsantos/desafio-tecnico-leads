@@ -9,7 +9,7 @@ import styles from './LeadSummaryCard.module.css'
 
 interface LeadSummaryCardProps {
   lead: LeadSummaryDto
-  onResume: (leadId: string) => void
+  onResume: (leadId: string) => void | Promise<void>
   busy?: boolean
 }
 

@@ -7,7 +7,7 @@ import styles from './LeadSummaryRow.module.css'
 
 interface LeadSummaryRowProps {
   lead: LeadSummaryDto
-  onResume: (leadId: string) => void
+  onResume: (leadId: string) => void | Promise<void>
   busy?: boolean
 }
 
