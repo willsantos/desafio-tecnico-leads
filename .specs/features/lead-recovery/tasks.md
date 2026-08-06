@@ -562,9 +562,9 @@ T23 → T24
 - Skill: `coding-guidelines`, `react-best-practices`, `react-composition-patterns`
 
 **Done when**:
-- [ ] Shows full summary (consultation, selected simulation, identification, professional/banking data, documents)
-- [ ] Calls `POST .../confirm`; on 422 shows the exact pendency list; on 503/504 offers `POST .../retry-submission`
-- [ ] Shows `finalRegistration.registrationId` on success
+- [x] Shows full summary (consultation, selected simulation, identification, professional/banking data, documents)
+- [x] Calls `POST .../confirm`; on 422 shows the exact pendency list; on 503/504 offers `POST .../retry-submission`
+- [x] Shows `finalRegistration.registrationId` on success
 
 **Tests**: none
 **Gate**: Build (frontend)
