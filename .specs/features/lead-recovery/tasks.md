@@ -631,9 +631,9 @@ T23 → T24
 - Skill: NONE
 
 **Done when**:
-- [ ] Modeling rationale documented (embedded vs. referenced, indexes + why, concurrency strategy, schema versioning, field convention)
-- [ ] Known limitations documented (no auth, no at-rest encryption, no automatic `abandoned` detection)
-- [ ] Execution instructions confirmed accurate against the actual `docker compose up --build` flow
+- [x] Modeling rationale documented (embedded vs. referenced, indexes + why, concurrency strategy, schema versioning, field convention)
+- [x] Known limitations documented (no auth, no at-rest encryption, no automatic `abandoned` detection)
+- [x] Execution instructions confirmed accurate against the actual `docker compose up --build` flow
 
 **Tests**: none
 **Gate**: Docs

@@ -294,6 +294,79 @@ docker compose up --build
 # Frontend: http://localhost:3000
 ```
 
+Sem passos manuais: o `docker-compose.yml` sobe `mongo` (com healthcheck), `api` (aguarda o Mongo saudável) e `frontend`, nessa ordem.
+
+Documentação da API (Swagger UI, gerada via `Swashbuckle.AspNetCore`) fica disponível em `http://localhost:8080/swagger`, mas só quando `ASPNETCORE_ENVIRONMENT=Development` — o `docker-compose.yml` do repositório não define essa variável (roda em `Production` por padrão, sem Swagger exposto), então para inspecionar os schemas localmente rode a API fora do Docker com essa variável setada, por exemplo:
+
+```bash
+cd backend/src/ConsignadoLeads.Api
+ASPNETCORE_ENVIRONMENT=Development ConnectionStrings__MongoDb="mongodb://localhost:27017/consignado_leads" dotnet run
+# Swagger UI: http://localhost:5000/swagger (ou a porta que o dotnet run reportar)
+```
+
 ## CI incluída
 
 O workflow `.github/workflows/ci.yml` roda a cada push: sobe a stack com `docker compose up` e verifica `GET /health` e o frontend. É o pré-requisito mínimo da entrega — mantenha-o verde. A avaliação final usa uma suíte automatizada adicional contra o contrato de API da seção 5.
+
+---
+
+## Modelagem NoSQL — decisões e trade-offs (seção 6)
+
+Respostas às perguntas literais da seção 6, ancoradas no código de `backend/src/ConsignadoLeads.Api/Core/Models/Lead.cs` e `Core/MongoContext.cs`.
+
+### O que fica embutido no documento do lead vs. em coleção própria
+
+Tudo que descreve o **estado do lead em si** fica embutido num único documento da coleção `leads`: `consultation`, `simulations` (histórico cumulativo), `identification`, `professionalData`, `bankingData` e `confirmation` (com sua lista de `attempts`). Cada etapa é uma sub-árvore do mesmo documento — não uma coleção separada — porque o caso de uso dominante é "carregar o lead inteiro para renderizar o resumo/retomar o fluxo" (um `GET /leads/{id}`), e o MongoDB otimiza para ler um documento inteiro de uma vez. Dividir isso em coleções obrigaria a fazer *joins* aplicacionais para reconstruir algo que é lido e escrito quase sempre como uma unidade.
+
+Os **documentos anexados na etapa 5** (`lead_documents`) são a exceção deliberada: vivem numa coleção própria, referenciada por `leadId` (chave de aplicação, sem *foreign key* nativa do Mongo), e o binário do arquivo fica em GridFS (`fs.files`/`fs.chunks`), referenciado a partir de `lead_documents.gridFsFileId`. Três motivos: (1) binários (até 10MB por arquivo) inflariam rapidamente o documento do lead até o limite de 16MB do BSON; (2) o histórico de reenvios (`replaced`) precisa sobreviver independente do ciclo de vida do lead; (3) o padrão de acesso é diferente — o documento é lido por si só (`GET /leads/{id}/documents`), não como parte de toda leitura do lead.
+
+### Como se previne o crescimento excessivo do documento
+
+- Binários nunca entram no documento do lead — ver acima.
+- `simulations` cresce só com ações explícitas do usuário na etapa 2 (uma simulação por chamada de `POST /steps/simulation`); não há como um único fluxo gerar centenas de entradas sem centenas de cliques reais.
+- `confirmation.attempts` cresce só com tentativas de confirmação/retry — limitado pelo mutex de status (uma tentativa por vez) e pelo comportamento humano, não por nenhum laço automático.
+- Não há campos de auditoria granular (log de cada campo alterado) nem eventos de domínio persistidos no lead — se fossem necessários, iriam para uma coleção `lead_events` à parte, não embutidos.
+
+### Índices criados e por quê
+
+Definidos em `Core/MongoContext.cs:44-56` (`EnsureIndexesAsync`, chamado uma vez no startup — `createIndex` é idempotente, então repetir a chamada em cada boot é seguro):
+
+| Coleção | Índice | Por quê |
+| --- | --- | --- |
+| `leads` | `{status: 1, "progress.currentStep": 1}` | Suporta `GET /leads?status=&currentStep=` (filtros do contrato) sem *collection scan*. |
+| `leads` | `{"consultation.input.cpf": 1}` | Caminho natural para localizar leads de um CPF (retomada de fluxo, e a pergunta da seção 13 sobre duplicidade por CPF); hoje não há *unique constraint* aqui — ver limitações abaixo. |
+| `leads` | `{createdAt: -1}` | Ordenação padrão de listagem (mais recentes primeiro) sem *sort* em memória. |
+| `lead_documents` | `{leadId: 1, status: 1}` | Suporta `GET /leads/{id}/documents` (documentos ativos de um lead) e a consulta que `ConfirmationHandler` faz para montar `activeDocuments` antes de validar pendências — ambas filtram por `leadId` e excluem `deleted`/`replaced` via `status`. |
+
+### Concorrência
+
+Duas mecânicas distintas, ambas via *updates* atômicos filtrados (`findOneAndUpdate`), sem transações — MongoDB standalone não tem `SELECT ... FOR UPDATE` nem replica set aqui (AD-004):
+
+- **Concorrência otimista por etapa** (`Consultation`, `Identification`, `ProfessionalBankingData`): o corpo aceita `expectedVersion` opcional; quando informado, o filtro do update vira `{_id, version: expectedVersion}`. Se o `MatchedCount` vier zero, um segundo `Find` distingue "lead não existe" (404) de "a versão mudou" (409 com `extensions.currentVersion`) — ver `ConsultationHandler.cs:61-101` e o mesmo padrão em `IdentificationHandler.cs` e `ProfessionalBankingDataHandler.cs`.
+- **Mutex de confirmação** (`ConfirmationHandler.AcquireMutexAsync`): em vez de comparar `version`, o filtro exige `status ∉ {confirming, completed}` e o update seta `status="confirming"` atomicamente. Só uma chamada concorrente recebe um documento não-nulo de volta; a(s) outra(s) caem no *fallback* que devolve 409 (já em andamento) ou 409 (já `completed`). É o mecanismo coberto pelo teste de duas confirmações simultâneas (seção 8).
+
+### Idempotência do `retry-submission`
+
+`ConfirmationHandler.RetrySubmissionAsync` primeiro olha `confirmation.finalRegistration`: se já existe um `registrationId`, retorna 200 com o mesmo registro sem tocar no sistema principal mockado de novo — nenhuma chamada nova, nenhum mutex necessário, porque nada muda. Só quando não há registro final é que o mutex de confirmação é adquirido e o mock é chamado.
+
+### Versionamento de schema
+
+Todo documento `leads` carrega `schemaVersion` (int, hoje `= 1`, `Lead.cs:20`). Não há migração automática implementada — para um protótipo de 7 dias, a estratégia é: uma mudança de schema futura lê `schemaVersion`, aplica a lógica correta por versão na camada de leitura, e/ou roda um *backfill* script único; o campo existe desde já para que essa evolução não exija adivinhar a forma de documentos antigos.
+
+### Convenção ausente / `null` / vazio
+
+- **Ausente do documento BSON** = etapa ainda não alcançada. Os campos opcionais de sub-objeto (`Consultation.Result`, `Lead.Consultation`, `Lead.Identification`, `Lead.ProfessionalData`, `Lead.BankingData`, `Confirmation.ConfirmedAt`, `Confirmation.FinalRegistration`, `IdentificationData.Query`, `Address.Complement`, `BankingData.PixKey`, `ConfirmationAttempt.Reason`) usam `[BsonIgnoreIfNull]` — quando estão `null` no POCO, o driver simplesmente não escreve a chave no BSON. Isso mantém o documento pequeno nas fases iniciais do lead e reflete literalmente "esse dado não existe ainda", não "existe mas é vazio".
+- **`null` no JSON de resposta** é a serialização dessa mesma ausência na fronteira da API — o exemplo de shape da seção 5 mostra isso (`"professionalData": null` antes da etapa 4).
+- **Vazio** é reservado para coleções que fazem parte do formato do documento desde a criação, mas ainda não têm itens: `simulations` (`List<Simulation>`, default `new()`), `progress.startedSteps`/`completedSteps`/`pendingItems`, `confirmation.attempts` — todas inicializadas como lista vazia, nunca `null`, porque a spec trata "zero simulações" como um estado válido e distinto de "simulação nunca modelada".
+
+---
+
+## Trade-offs e limitações conhecidas
+
+- **Sem autenticação/autorização.** Qualquer chamador com acesso à porta 8080 pode ler/escrever qualquer lead — aceitável para o escopo do desafio (seção 11 lista isso como diferencial opcional), mas é o primeiro item a resolver antes de produção.
+- **Sem criptografia em repouso para CPF e dados bancários.** Eles ficam em texto claro no MongoDB (só os *logs* são mascarados — ver `Core/Logging/SensitiveDataMasker.cs`, que redige `cpf`, `documentNumber` e `bankingData` antes de qualquer `ILogger` gravar uma requisição/resposta). Em produção isso pediria ao menos *field-level encryption* do driver ou criptografia de disco no Mongo.
+- **Sem detecção automática de `abandoned`.** O enum de `status` inclui `abandoned`, mas nada no backend transiciona um lead para esse estado sozinho — não há *job*/TTL nem MongoDB Change Streams (também citado como diferencial opcional na seção 11) observando inatividade. Um lead parado fica congelado no último `status` alcançado até que o cliente volte.
+- **Sem `unique index` em `consultation.input.cpf`.** O índice existe para consulta rápida, mas não impede dois leads distintos para o mesmo CPF — resolver a pergunta 7 da seção 13 (evitar duplicidade) ficaria por conta de uma constraint adicional (unique index parcial, ou uma checagem de aplicação antes do `POST /leads/consultation`) fora do escopo implementado aqui.
+- **Frontend rastreia um cursor de etapa próprio, além de `progress.currentStep`.** O backend nunca avança `progress.currentStep` além de `"professional-banking-data"` — as etapas de documentos e confirmação não têm marcador de progresso próprio no servidor. `frontend/src/shared/leadContext.tsx` compensa isso com um `step` local no React context, sincronizado com `progress.currentStep` na carga/retomada e avançado manualmente pela UI depois disso (ver `resolveStepId` em `leadContext.tsx:37-42`).
+- **Campos sem enum definido no contrato são texto livre no frontend.** `maritalStatus`, `employmentType` e `accountType` não têm uma lista de valores fechada na seção 5 do contrato, então os formulários (`IdentificationPage.tsx`, `ProfessionalBankingDataPage.tsx`) os tratam como `<input>` de texto simples em vez de `<select>` — o backend também os persiste como `string` livre (`Lead.cs`), sem validação de valores permitidos.
+- **Upload de documento e metadado não são transacionais** (Mongo standalone, sem sessions) — uma falha entre o upload no GridFS e a escrita em `lead_documents` deixa um blob órfão no GridFS (inofensivo, nunca referenciado), nunca o inverso (AD-002).
