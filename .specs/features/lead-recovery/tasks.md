@@ -654,10 +654,10 @@ T23 → T24
 - Skill: `playwright-skill` (automated click-through of the 6 steps against the running stack)
 
 **Done when**:
-- [ ] `docker compose up --build` starts cleanly, no manual steps
-- [ ] `GET /health` → 200; frontend loads on `:3000`
-- [ ] Manual click-through of all 6 steps completes and reaches `completed`
-- [ ] Any gap found here becomes a follow-up task with its own commit — this task itself makes no code changes unless fixing something trivial
+- [x] `docker compose up --build` starts cleanly, no manual steps
+- [x] `GET /health` → 200; frontend loads on `:3000`
+- [x] Manual click-through of all 6 steps completes and reaches `completed`
+- [x] Any gap found here becomes a follow-up task with its own commit — this task itself makes no code changes unless fixing something trivial
 
 **Tests**: none
 **Gate**: Stack
