@@ -11,6 +11,19 @@ namespace ConsignadoLeads.Api.Features.Documents;
 public class DocumentsHandler(MongoContext mongo)
 {
     /// <summary>
+    /// Lightweight existence check used by the upload endpoint so a missing lead returns 404
+    /// before any file validation runs (README seção 5: upload never creates a lead).
+    /// </summary>
+    public async Task EnsureLeadExistsAsync(string leadId)
+    {
+        var leadExists = await mongo.Leads.Find(l => l.Id == leadId).AnyAsync();
+        if (!leadExists)
+        {
+            throw new LeadNotFoundException(leadId);
+        }
+    }
+
+    /// <summary>
     /// Write order per design.md (no cross-collection transaction, standalone Mongo): 1)
     /// GridFS upload succeeds first, 2) metadata insert, 3) previous same-type doc marked
     /// replaced. A crash between 1-2 only leaves an unreferenced GridFS blob — never a

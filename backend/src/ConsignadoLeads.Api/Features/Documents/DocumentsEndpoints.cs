@@ -9,6 +9,10 @@ public static class DocumentsEndpoints
     {
         app.MapPost("/leads/{id}/documents", async (string id, HttpRequest request, DocumentsHandler handler) =>
         {
+            // Lead existence is checked before file validation so a missing lead + invalid file
+            // still returns 404 (resource not found takes precedence over malformed payload).
+            await handler.EnsureLeadExistsAsync(id);
+
             var form = await request.ReadFormAsync();
             var file = form.Files.GetFile("file");
             var type = form["type"].ToString();

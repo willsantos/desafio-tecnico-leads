@@ -100,6 +100,17 @@ public class DocumentsEndpointsTests : IClassFixture<LeadRecoveryWebApplicationF
     }
 
     [Fact]
+    public async Task PostDocument_WhenLeadDoesNotExistAndFileInvalid_Returns404()
+    {
+        var missingLeadId = Guid.NewGuid().ToString();
+        using var form = BuildUploadForm([1, 2, 3], "text/plain", "payslip", fileName: "payslip.txt");
+
+        var response = await _client.PostAsync($"/leads/{missingLeadId}/documents", form);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PostDocument_ExceedingSizeLimit_Returns400()
     {
         var leadId = await CreateLeadAsync();
