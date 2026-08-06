@@ -4,6 +4,7 @@ import { Alert } from '../../shared/components/ui/Alert'
 import { Button } from '../../shared/components/ui/Button'
 import { Card } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
+import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
@@ -88,14 +89,21 @@ export function SimulationPage() {
             onChange={(e) => setForm((previous) => ({ ...previous, requestedAmount: e.target.value }))}
             required
           />
-          <Input
+          <Select
             label="Número de parcelas"
             name="installments"
-            type="number"
-            min="1"
-            step="1"
             value={form.installments}
             onChange={(e) => setForm((previous) => ({ ...previous, installments: e.target.value }))}
+            options={[
+              { value: '6', label: '6 parcelas' },
+              { value: '12', label: '12 parcelas' },
+              { value: '24', label: '24 parcelas' },
+              { value: '36', label: '36 parcelas' },
+              { value: '48', label: '48 parcelas' },
+              { value: '60', label: '60 parcelas' },
+              { value: '72', label: '72 parcelas' },
+            ]}
+            placeholder="Selecione"
             required
           />
         </div>
