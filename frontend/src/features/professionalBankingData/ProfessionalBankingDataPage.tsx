@@ -4,10 +4,11 @@ import { Alert } from '../../shared/components/ui/Alert'
 import { Button } from '../../shared/components/ui/Button'
 import { Card } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
+import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
-import { EMPTY_PROFESSIONAL_BANKING_FORM, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
+import { ACCOUNT_TYPES, EMPTY_PROFESSIONAL_BANKING_FORM, EMPLOYMENT_TYPES, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
 import { submitProfessionalBankingData } from './professionalBankingDataApi'
 import styles from './ProfessionalBankingDataPage.module.css'
 
@@ -50,6 +51,8 @@ export function ProfessionalBankingDataPage() {
 
   const leadId = lead.id
   const expectedVersion = lead.version
+  // The loan can only be deposited into the applicant's own account.
+  const defaultAccountHolder = lead.identification?.fullName ?? ''
 
   function updateProfessional<K extends keyof ProfessionalBankingDataFormValues['professionalData']>(
     key: K,
@@ -79,7 +82,11 @@ export function ProfessionalBankingDataPage() {
     try {
       const dto = await submitProfessionalBankingData(leadId, {
         professionalData: { ...form.professionalData, monthlyIncome },
-        bankingData: { ...form.bankingData, pixKey: form.bankingData.pixKey || undefined },
+        bankingData: {
+          ...form.bankingData,
+          accountHolder: defaultAccountHolder,
+          pixKey: form.bankingData.pixKey || undefined,
+        },
         expectedVersion,
       })
       setLead(dto)
@@ -99,7 +106,15 @@ export function ProfessionalBankingDataPage() {
       <form onSubmit={handleSubmit} className={styles.form}>
         <Card title="Dados profissionais">
           <div className={styles.grid2}>
-            <Input label="Tipo de vínculo" name="employmentType" value={form.professionalData.employmentType} onChange={(e) => updateProfessional('employmentType', e.target.value)} required />
+            <Select
+              label="Tipo de vínculo"
+              name="employmentType"
+              value={form.professionalData.employmentType}
+              onChange={(e) => updateProfessional('employmentType', e.target.value)}
+              options={EMPLOYMENT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              placeholder="Selecione"
+              required
+            />
             <Input label="Empresa/Órgão" name="company" value={form.professionalData.company} onChange={(e) => updateProfessional('company', e.target.value)} required />
             <Input label="Matrícula" name="registrationNumber" value={form.professionalData.registrationNumber} onChange={(e) => updateProfessional('registrationNumber', e.target.value)} required />
             <Input label="Cargo" name="role" value={form.professionalData.role} onChange={(e) => updateProfessional('role', e.target.value)} required />
@@ -114,9 +129,16 @@ export function ProfessionalBankingDataPage() {
             <Input label="Agência" name="agency" value={form.bankingData.agency} onChange={(e) => updateBanking('agency', e.target.value)} required />
             <Input label="Conta" name="account" value={form.bankingData.account} onChange={(e) => updateBanking('account', e.target.value)} required />
             <Input label="Dígito" name="accountDigit" value={form.bankingData.accountDigit} onChange={(e) => updateBanking('accountDigit', e.target.value)} required />
-            <Input label="Tipo de conta" name="accountType" value={form.bankingData.accountType} onChange={(e) => updateBanking('accountType', e.target.value)} required />
-            <Input label="Titular" name="accountHolder" value={form.bankingData.accountHolder} onChange={(e) => updateBanking('accountHolder', e.target.value)} required />
-            <Input label="Chave PIX (opcional)" name="pixKey" value={form.bankingData.pixKey} onChange={(e) => updateBanking('pixKey', e.target.value)} className={styles.span2} />
+            <Select
+              label="Tipo de conta"
+              name="accountType"
+              value={form.bankingData.accountType}
+              onChange={(e) => updateBanking('accountType', e.target.value)}
+              options={ACCOUNT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              placeholder="Selecione"
+              required
+            />
+            <Input label="Chave PIX (opcional)" name="pixKey" value={form.bankingData.pixKey} onChange={(e) => updateBanking('pixKey', e.target.value)} />
           </div>
         </Card>
 
