@@ -1,15 +1,17 @@
 import { useState, type FormEvent } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
-import { LoadingError } from '../../shared/components/LoadingError'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { FileUpload } from '../../shared/components/ui/FileUpload'
 import { uploadDocument } from './documentsApi'
+import styles from './UploadCard.module.css'
 
 interface PayslipUploadCardProps {
   leadId: string
   onUploaded: () => void
 }
 
-/** Independent upload widget for `type=payslip` — no subtype field (only `personal_document`
- * has one), kept as its own component rather than a boolean branch on a shared one. */
 export function PayslipUploadCard({ leadId, onUploaded }: PayslipUploadCardProps) {
   const [file, setFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -35,20 +37,28 @@ export function PayslipUploadCard({ leadId, onUploaded }: PayslipUploadCardProps
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ border: '1px solid #ccc', borderRadius: 4, padding: '1rem' }}>
-      <h3>Contracheque</h3>
-      <label>
-        Arquivo (JPEG, PNG ou PDF, até 10MB)
-        <input
-          type="file"
+    <Card title="Contracheque" className={styles.card}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <FileUpload
+          id="payslip"
+          label="Arquivo"
+          description="JPEG, PNG ou PDF, até 10MB"
           accept="image/jpeg,image/png,application/pdf"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          selectedFile={file}
+          onFileSelect={setFile}
+          disabled={submitting}
         />
-      </label>
-      <button type="submit" disabled={submitting}>
-        Enviar contracheque
-      </button>
-      <LoadingError error={error} />
-    </form>
+        {error && (
+          <Alert variant="error" title="Erro no envio">
+            {error}
+          </Alert>
+        )}
+        <div className={styles.actions}>
+          <Button type="submit" loading={submitting} disabled={!file || submitting}>
+            Enviar contracheque
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

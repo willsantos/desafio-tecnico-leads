@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import type { DocumentDto } from '../../shared/api/types'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
 import { PayslipUploadCard } from './PayslipUploadCard'
 import { PersonalDocumentUploadCard } from './PersonalDocumentUploadCard'
 import { deleteDocument, listDocuments } from './documentsApi'
+import styles from './DocumentsPage.module.css'
 
 const TYPE_LABELS: Record<string, string> = {
   personal_document: 'Documento pessoal',
@@ -41,7 +46,11 @@ export function DocumentsPage() {
   }, [loadDocuments])
 
   if (!lead) {
-    return <p>Complete as etapas anteriores antes de enviar anexos.</p>
+    return (
+      <Alert variant="warning" title="Etapa anterior não concluída">
+        Complete as etapas anteriores antes de enviar anexos.
+      </Alert>
+    )
   }
 
   const activeLeadId = lead.id
@@ -60,11 +69,15 @@ export function DocumentsPage() {
   const hasPayslip = documents.some((doc) => doc.type === 'payslip')
 
   return (
-    <section>
-      <h2>Etapa 5 — Anexos</h2>
-      <p>Envie o documento pessoal e o contracheque separadamente — cada envio é independente.</p>
+    <section className={styles.wrapper}>
+      <Text variant="title" as="h2" className={styles.heading}>
+        Anexos
+      </Text>
+      <Text variant="body">
+        Envie o documento pessoal e o contracheque separadamente — cada envio é independente.
+      </Text>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+      <div className={styles.uploadGrid}>
         <PersonalDocumentUploadCard
           leadId={activeLeadId}
           defaultSubtype={lead.identification?.documentType}
@@ -75,25 +88,41 @@ export function DocumentsPage() {
 
       <LoadingError loading={loading} error={error} onRetry={loadDocuments}>
         {documents.length === 0 ? (
-          <p>Nenhum documento enviado ainda.</p>
+          <Alert variant="info" title="Nenhum documento enviado">
+            Envie pelo menos um documento pessoal e um contracheque para prosseguir.
+          </Alert>
         ) : (
-          <ul>
+          <div className={styles.list}>
+            <Text variant="subtitle" as="h3">
+              Documentos enviados
+            </Text>
             {documents.map((doc) => (
-              <li key={doc.id}>
-                {TYPE_LABELS[doc.type] ?? doc.type}
-                {doc.personalDocumentSubtype && ` (${doc.personalDocumentSubtype})`} — {doc.status}{' '}
-                <button type="button" onClick={() => handleDelete(doc.id)}>
+              <Card key={doc.id} className={styles.documentCard}>
+                <div className={styles.documentInfo}>
+                  <Text variant="body">
+                    {TYPE_LABELS[doc.type] ?? doc.type}
+                    {doc.personalDocumentSubtype && ` (${doc.personalDocumentSubtype})`}
+                  </Text>
+                  <Text variant="caption">{doc.status}</Text>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
                   Remover
-                </button>
-              </li>
+                </Button>
+              </Card>
             ))}
-          </ul>
+          </div>
         )}
       </LoadingError>
 
-      <button type="button" disabled={!hasPersonalDocument || !hasPayslip} onClick={() => setStep('confirmation')}>
-        Avançar para confirmação
-      </button>
+      <div className={styles.actions}>
+        <Button
+          variant="primary"
+          onClick={() => setStep('confirmation')}
+          disabled={!hasPersonalDocument || !hasPayslip}
+        >
+          Avançar para confirmação
+        </Button>
+      </div>
     </section>
   )
 }

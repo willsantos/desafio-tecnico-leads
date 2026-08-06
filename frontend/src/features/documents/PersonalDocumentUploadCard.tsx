@@ -1,8 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
-import { LoadingError } from '../../shared/components/LoadingError'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { FileUpload } from '../../shared/components/ui/FileUpload'
+import { Select } from '../../shared/components/ui/Select'
 import { PERSONAL_DOCUMENT_SUBTYPES } from './documents.types'
 import { uploadDocument } from './documentsApi'
+import styles from './UploadCard.module.css'
 
 interface PersonalDocumentUploadCardProps {
   leadId: string
@@ -11,8 +16,6 @@ interface PersonalDocumentUploadCardProps {
   onUploaded: () => void
 }
 
-/** Independent upload widget for `type=personal_document` — has its own file/subtype/submitting
- * state, so it can be filled and sent without the payslip upload being ready (spec P1-5 AC9). */
 export function PersonalDocumentUploadCard({ leadId, defaultSubtype, onUploaded }: PersonalDocumentUploadCardProps) {
   const [file, setFile] = useState<File | null>(null)
   const [subtype, setSubtype] = useState(defaultSubtype ?? PERSONAL_DOCUMENT_SUBTYPES[0])
@@ -39,30 +42,36 @@ export function PersonalDocumentUploadCard({ leadId, defaultSubtype, onUploaded 
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ border: '1px solid #ccc', borderRadius: 4, padding: '1rem' }}>
-      <h3>Documento pessoal</h3>
-      <label>
-        Tipo
-        <select value={subtype} onChange={(e) => setSubtype(e.target.value)}>
-          {PERSONAL_DOCUMENT_SUBTYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Arquivo (JPEG, PNG ou PDF, até 10MB)
-        <input
-          type="file"
-          accept="image/jpeg,image/png,application/pdf"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+    <Card title="Documento pessoal" className={styles.card}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <Select
+          label="Tipo de documento"
+          name="personalDocumentSubtype"
+          value={subtype}
+          onChange={(e) => setSubtype(e.target.value)}
+          options={PERSONAL_DOCUMENT_SUBTYPES.map((type) => ({ value: type, label: type }))}
+          required
         />
-      </label>
-      <button type="submit" disabled={submitting}>
-        Enviar documento pessoal
-      </button>
-      <LoadingError error={error} />
-    </form>
+        <FileUpload
+          id="personal-document"
+          label="Arquivo"
+          description="JPEG, PNG ou PDF, até 10MB"
+          accept="image/jpeg,image/png,application/pdf"
+          selectedFile={file}
+          onFileSelect={setFile}
+          disabled={submitting}
+        />
+        {error && (
+          <Alert variant="error" title="Erro no envio">
+            {error}
+          </Alert>
+        )}
+        <div className={styles.actions}>
+          <Button type="submit" loading={submitting} disabled={!file || submitting}>
+            Enviar documento pessoal
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

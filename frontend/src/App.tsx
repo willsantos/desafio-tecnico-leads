@@ -7,7 +7,9 @@ import { ProfessionalBankingDataPage } from './features/professionalBankingData/
 import { SimulationPage } from './features/simulation/SimulationPage'
 import type { ProgressDto } from './shared/api/types'
 import { Stepper, type StepperStep } from './shared/components/Stepper'
+import { Text } from './shared/components/ui/Text'
 import { CURRENT_STEP_TO_STEP_ID, LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
+import styles from './App.module.css'
 
 const STEP_LABELS: Record<StepId, string> = {
   consultation: 'Consulta',
@@ -67,16 +69,27 @@ function AppShell() {
   const StepPage = STEP_PAGES[step]
 
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem' }}>
-      <h1>Recuperação de Leads — Empréstimo Consignado</h1>
-      <Stepper
-        steps={STEPPER_STEPS}
-        currentStepId={step}
-        completedStepIds={completedStepIds}
-        onStepClick={lead ? handleStepClick : undefined}
-      />
-      <StepPage />
-    </main>
+    <div className={styles.layout}>
+      <header className={styles.header}>
+        <Text variant="display" as="h1" className={styles.title}>
+          Recuperação de Leads
+        </Text>
+        <Text variant="muted" as="p">
+          Empréstimo Consignado
+        </Text>
+      </header>
+      <main className={styles.main}>
+        <Stepper
+          steps={STEPPER_STEPS}
+          currentStepId={step}
+          completedStepIds={completedStepIds}
+          onStepClick={lead ? handleStepClick : undefined}
+        />
+        <section className={styles.content}>
+          <StepPage />
+        </section>
+      </main>
+    </div>
   )
 }
 

@@ -1,9 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { Input } from '../../shared/components/ui/Input'
+import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
 import { EMPTY_PROFESSIONAL_BANKING_FORM, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
 import { submitProfessionalBankingData } from './professionalBankingDataApi'
+import styles from './ProfessionalBankingDataPage.module.css'
 
 export function ProfessionalBankingDataPage() {
   const { lead, setLead, setStep } = useLead()
@@ -35,7 +41,11 @@ export function ProfessionalBankingDataPage() {
   const [error, setError] = useState<string | null>(null)
 
   if (!lead) {
-    return <p>Complete as etapas anteriores antes de informar dados profissionais e bancários.</p>
+    return (
+      <Alert variant="warning" title="Etapa anterior não concluída">
+        Complete as etapas anteriores antes de informar dados profissionais e bancários.
+      </Alert>
+    )
   }
 
   const leadId = lead.id
@@ -81,104 +91,49 @@ export function ProfessionalBankingDataPage() {
   }
 
   return (
-    <section>
-      <h2>Etapa 4 — Dados profissionais e bancários</h2>
+    <section className={styles.wrapper}>
+      <Text variant="title" as="h2" className={styles.heading}>
+        Dados profissionais e bancários
+      </Text>
 
-      <form onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Dados profissionais</legend>
-          <label>
-            Tipo de vínculo
-            <input
-              value={form.professionalData.employmentType}
-              onChange={(e) => updateProfessional('employmentType', e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Empresa/Órgão
-            <input value={form.professionalData.company} onChange={(e) => updateProfessional('company', e.target.value)} required />
-          </label>
-          <label>
-            Matrícula
-            <input
-              value={form.professionalData.registrationNumber}
-              onChange={(e) => updateProfessional('registrationNumber', e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Cargo
-            <input value={form.professionalData.role} onChange={(e) => updateProfessional('role', e.target.value)} required />
-          </label>
-          <label>
-            Renda mensal (R$)
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.professionalData.monthlyIncome}
-              onChange={(e) => updateProfessional('monthlyIncome', e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Data de admissão
-            <input
-              type="date"
-              value={form.professionalData.admissionDate}
-              onChange={(e) => updateProfessional('admissionDate', e.target.value)}
-              required
-            />
-          </label>
-        </fieldset>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <Card title="Dados profissionais">
+          <div className={styles.grid2}>
+            <Input label="Tipo de vínculo" name="employmentType" value={form.professionalData.employmentType} onChange={(e) => updateProfessional('employmentType', e.target.value)} required />
+            <Input label="Empresa/Órgão" name="company" value={form.professionalData.company} onChange={(e) => updateProfessional('company', e.target.value)} required />
+            <Input label="Matrícula" name="registrationNumber" value={form.professionalData.registrationNumber} onChange={(e) => updateProfessional('registrationNumber', e.target.value)} required />
+            <Input label="Cargo" name="role" value={form.professionalData.role} onChange={(e) => updateProfessional('role', e.target.value)} required />
+            <Input label="Renda mensal (R$)" name="monthlyIncome" type="number" min="0" step="0.01" value={form.professionalData.monthlyIncome} onChange={(e) => updateProfessional('monthlyIncome', e.target.value)} required />
+            <Input label="Data de admissão" name="admissionDate" type="date" value={form.professionalData.admissionDate} onChange={(e) => updateProfessional('admissionDate', e.target.value)} required />
+          </div>
+        </Card>
 
-        <fieldset>
-          <legend>Dados bancários</legend>
-          <label>
-            Banco
-            <input value={form.bankingData.bank} onChange={(e) => updateBanking('bank', e.target.value)} required />
-          </label>
-          <label>
-            Agência
-            <input value={form.bankingData.agency} onChange={(e) => updateBanking('agency', e.target.value)} required />
-          </label>
-          <label>
-            Conta
-            <input value={form.bankingData.account} onChange={(e) => updateBanking('account', e.target.value)} required />
-          </label>
-          <label>
-            Dígito
-            <input value={form.bankingData.accountDigit} onChange={(e) => updateBanking('accountDigit', e.target.value)} required />
-          </label>
-          <label>
-            Tipo de conta
-            <input value={form.bankingData.accountType} onChange={(e) => updateBanking('accountType', e.target.value)} required />
-          </label>
-          <label>
-            Titular
-            <input
-              value={form.bankingData.accountHolder}
-              onChange={(e) => updateBanking('accountHolder', e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Chave PIX (opcional)
-            <input value={form.bankingData.pixKey} onChange={(e) => updateBanking('pixKey', e.target.value)} />
-          </label>
-        </fieldset>
+        <Card title="Dados bancários">
+          <div className={styles.grid2}>
+            <Input label="Banco" name="bank" value={form.bankingData.bank} onChange={(e) => updateBanking('bank', e.target.value)} required />
+            <Input label="Agência" name="agency" value={form.bankingData.agency} onChange={(e) => updateBanking('agency', e.target.value)} required />
+            <Input label="Conta" name="account" value={form.bankingData.account} onChange={(e) => updateBanking('account', e.target.value)} required />
+            <Input label="Dígito" name="accountDigit" value={form.bankingData.accountDigit} onChange={(e) => updateBanking('accountDigit', e.target.value)} required />
+            <Input label="Tipo de conta" name="accountType" value={form.bankingData.accountType} onChange={(e) => updateBanking('accountType', e.target.value)} required />
+            <Input label="Titular" name="accountHolder" value={form.bankingData.accountHolder} onChange={(e) => updateBanking('accountHolder', e.target.value)} required />
+            <Input label="Chave PIX (opcional)" name="pixKey" value={form.bankingData.pixKey} onChange={(e) => updateBanking('pixKey', e.target.value)} className={styles.span2} />
+          </div>
+        </Card>
 
-        <button type="submit" disabled={submitting}>
-          {lead.professionalData ? 'Atualizar dados' : 'Salvar dados'}
-        </button>
+        <div className={styles.actions}>
+          <Button type="submit" loading={submitting} disabled={submitting}>
+            {lead.professionalData ? 'Atualizar dados' : 'Salvar dados'}
+          </Button>
+        </div>
       </form>
 
       <LoadingError error={error} />
 
-      <button type="button" disabled={!lead.professionalData} onClick={() => setStep('documents')}>
-        Avançar para anexos
-      </button>
+      <div className={styles.actions}>
+        <Button variant="primary" onClick={() => setStep('documents')} disabled={!lead.professionalData || submitting}>
+          Avançar para anexos
+        </Button>
+      </div>
     </section>
   )
 }
