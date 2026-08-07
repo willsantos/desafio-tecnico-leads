@@ -119,7 +119,7 @@ Edge cases are usually unwanted-behavior (IF/THEN) or boundary (WHEN) criteria:
 | PRS-09 | P2 | Execute | Verified |
 | PRS-10 | P2 | Execute | Verified |
 | PRS-11 | P2 | Execute | Verified |
-| PRS-12 | P3 | - | Pending |
+| PRS-12 | P3 | Execute | Verified |
 
 **ID format:** `PRS-NN` (progress-resume-step).
 
