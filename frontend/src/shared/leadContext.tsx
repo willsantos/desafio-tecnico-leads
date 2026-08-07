@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
 import { httpClient } from './api/httpClient'
 import type { LeadDto, ProgressDto } from './api/types'
 
@@ -129,7 +129,13 @@ export function LeadProvider({ children }: { children: ReactNode }) {
   const [lead, setLeadState] = useState<LeadDto | null>(readStoredLead)
   const [step, setStepState] = useState<StepId>(readStoredStep)
 
+  // Tracks the lead id the UI currently expects to hold. A background `refreshLead` whose await
+  // resolves after the user switched proposals (or hit "Nova proposta") must NOT commit its stale
+  // response — otherwise lead A overwrites lead B / the clean state (cubic P1).
+  const activeLeadIdRef = useRef<string | null>(lead?.id ?? null)
+
   const setLead = useCallback((next: LeadDto) => {
+    activeLeadIdRef.current = next.id
     setLeadState(next)
     writeStoredLead(next)
   }, [])
@@ -143,13 +149,19 @@ export function LeadProvider({ children }: { children: ReactNode }) {
     if (!lead) {
       return null
     }
-    const fresh = await httpClient.get<LeadDto>(`/leads/${lead.id}`)
+    const expectedId = lead.id
+    const fresh = await httpClient.get<LeadDto>(`/leads/${expectedId}`)
+    // Bail if the user moved on to a different lead (or reset) while this request was in flight.
+    if (activeLeadIdRef.current !== expectedId) {
+      return null
+    }
     setLeadState(fresh)
     writeStoredLead(fresh)
     return fresh
   }, [lead])
 
   const resetLead = useCallback(() => {
+    activeLeadIdRef.current = null
     setLeadState(null)
     setStepState('consultation')
     writeStoredLead(null)
