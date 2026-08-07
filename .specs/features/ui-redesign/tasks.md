@@ -370,8 +370,8 @@ Phases run in sequence. Tasks within a phase execute in order.
 
 - **Phase 1** (Foundation): T1, T2
 - **Phase 2** (Components): T3, T4, T5, T6, T7
-- **Phase 3** (Pages): T8, T9, T10, T11, T12, T13, T14
-- **Phase 4** (Polish): T15
+- **Phase 3** (Pages): T8, T9, T10, T11, T12, T13
+- **Phase 4** (Polish): T14, T15
 
 Total: 15 tasks.
 

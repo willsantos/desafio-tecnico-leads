@@ -17,6 +17,18 @@ O redesign introduz um **sistema de design leve** baseado em CSS custom properti
 4. **Responsividade**: layout fluído que funciona de 360 px a 1440 px.
 5. **Acessibilidade**: contraste adequado, labels explícitos, foco visível.
 
+### Acessibilidade — requisitos obrigatórios por componente
+
+Aplicam-se a todos os componentes de formulário e diálogo, independente do pilar acima:
+
+- **Input / Select / Label**: todo campo com `label` deve associar `label` ↔ controle via `htmlFor`/`id` (gerar `id` estável com `useId` quando o caller omitir). Mensagens de erro devem ter `aria-live="polite"` e ser ligadas ao campo por `aria-describedby` (mesclando com qualquer `aria-describedby` fornecido pelo caller).
+- **FileUpload**: o alvo clicável/arrastável deve ter `role="button"`, `aria-disabled` quando desabilitado, e.drag-and-drop precisa respeitar o atributo `accept` (extensões **e** MIME) da mesma forma que o seletor nativo.
+- **Alert**: usar `role="status"`/`role="alert"` conforme a severidade, com `aria-live` apropriado.
+- **Modal**: foco deve entrar no diálogo ao abrir, Tab fica preso dentro, foco volta ao gatilho ao fechar, `aria-modal="true"`, `aria-labelledby` com `id` único por instância (`useId`), e scroll do body travado enquanto aberto.
+- **Button**: alvo mínimo 44×44 px, `:focus-visible` visível, e animações infinitas (spinner) respeitam `prefers-reduced-motion`.
+
+Esses requisitos são não-negociáveis: nenhum componente entra na biblioteca sem eles.
+
 ---
 
 ## Tokens de Design

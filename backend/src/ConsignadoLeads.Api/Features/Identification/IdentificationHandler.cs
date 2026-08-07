@@ -50,7 +50,12 @@ public class IdentificationHandler(MongoContext mongo, MockOutcomeResolver mockO
             .Set(l => l.UpdatedAt, now)
             .Inc(l => l.Version, 1);
 
+        // The documents lookup depends only on `id`, so start it before the lead update and await
+        // it after — keeps the documents-vs-confirmation resumeStep branch correct on the response
+        // without adding a serial round-trip (cubic P2/P3).
+        var activeDocsTask = mongo.GetActiveDocumentsAsync(id);
         var updated = await mongo.UpdateWithVersionCheckAsync(id, request.ExpectedVersion, update);
-        return LeadMapper.ToDto(updated);
+        var activeDocs = await activeDocsTask;
+        return LeadMapper.ToDto(updated, activeDocs.Select(DocumentMapper.ToDto).ToList());
     }
 }

@@ -50,6 +50,11 @@ O backend é dono do estado de progresso do lead, mas a responsabilidade de deci
 
 **Acceptance Criteria** (each line is one EARS pattern):
 
+> **Precedence:** rules apply in the order below — AC2 (confirmation-reached status) is checked
+> first and wins outright; only when AC2 does not apply do AC3/AC4/AC5 run. So a `failed_retryable`
+> lead with all four backend steps done but missing a document resolves to `confirmation`, never
+> `documents`. The resolver (`Core/ResumeStepResolver`) implements this ordering explicitly.
+
 1. The LeadDto.progress SHALL incluir um campo `resumeStep` do tipo string em toda resposta de `GET /leads/{id}` e dos endpoints `PUT /steps/*` e `POST /leads/consultation`. <!-- ubiquitous -->
 2. WHILE `lead.status` ∈ {`pending_confirmation`, `confirming`, `pending_verification`, `failed_retryable`, `completed`} o mapper SHALL setar `resumeStep = "confirmation"`. <!-- state-driven -->
 3. WHEN existir uma etapa backend rastreada (`consultation`, `simulation`, `identification`, `professional-banking-data`) ausente de `completedSteps` THEN o mapper SHALL setar `resumeStep` para a primeira dessas etapas pela ordem do fluxo. <!-- event-driven -->

@@ -6,7 +6,9 @@ namespace ConsignadoLeads.Api.Tests.Integration.Leads;
 /// <summary>
 /// End-to-end coverage for the derived <c>progress.resumeStep</c> field across lead states.
 /// Each test drives a lead through real endpoints and asserts the spec-defined resumeStep value
-/// (<c>.specs/features/progress-resume-step/spec.md</c> PRS-01/04/05/07/08).
+/// (<c>.specs/features/progress-resume-step/spec.md</c> PRS-01/03/04/05/07). PRS-02 (confirmation
+/// statuses) and PRS-08 (legacy-lead derivation) are covered at the unit level by
+/// <c>ResumeStepResolverTests</c>, not repeated here.
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection(nameof(ResumeStepEndpointsTests))]
@@ -87,6 +89,36 @@ public class ResumeStepEndpointsTests : IClassFixture<LeadRecoveryWebApplication
         await _client.PutAsJsonAsync($"/leads/{leadId}/steps/professional-banking-data", body);
     }
 
+    /// <summary>Single source of truth for the professional/banking PUT body used by the
+    /// GET-based and PUT-response tests (cubic P3: the body was duplicated). Returns the DTO.</summary>
+    private async Task<LeadDto> PutProfessionalBankingDataAsync(string leadId)
+    {
+        var body = new
+        {
+            professionalData = new
+            {
+                employmentType = "clt",
+                company = "ACME",
+                registrationNumber = "REG-1",
+                role = "Analyst",
+                monthlyIncome = 5000m,
+                admissionDate = "2020-01-01",
+            },
+            bankingData = new
+            {
+                bank = "001",
+                agency = "1234",
+                account = "56789",
+                accountDigit = "0",
+                accountType = "checking",
+                accountHolder = "Ana Silva",
+                pixKey = "chave@pix.com",
+            },
+        };
+        var response = await _client.PutAsJsonAsync($"/leads/{leadId}/steps/professional-banking-data", body);
+        return (await response.Content.ReadFromJsonAsync<LeadDto>())!;
+    }
+
     private static MultipartFormDataContent PersonalDocumentForm()
     {
         var form = new MultipartFormDataContent();
@@ -151,32 +183,9 @@ public class ResumeStepEndpointsTests : IClassFixture<LeadRecoveryWebApplication
         var leadId = await CreateLeadAsync();
         await ProgressThroughIdentificationAsync(leadId);
 
-        var body = new
-        {
-            professionalData = new
-            {
-                employmentType = "clt",
-                company = "ACME",
-                registrationNumber = "REG-1",
-                role = "Analyst",
-                monthlyIncome = 5000m,
-                admissionDate = "2020-01-01",
-            },
-            bankingData = new
-            {
-                bank = "001",
-                agency = "1234",
-                account = "56789",
-                accountDigit = "0",
-                accountType = "checking",
-                accountHolder = "Ana Silva",
-                pixKey = "chave@pix.com",
-            },
-        };
-        var response = await _client.PutAsJsonAsync($"/leads/{leadId}/steps/professional-banking-data", body);
-        var dto = await response.Content.ReadFromJsonAsync<LeadDto>();
+        var dto = await PutProfessionalBankingDataAsync(leadId);
 
-        Assert.Equal("documents", dto!.Progress.ResumeStep);
+        Assert.Equal("documents", dto.Progress.ResumeStep);
     }
 
     // PRS-05: all backend steps done + both documents -> "confirmation".

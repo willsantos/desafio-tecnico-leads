@@ -95,9 +95,9 @@ Not performed — feature is backend-derived-field + frontend mapping logic; no 
 ## Gate Check
 
 - **Gate command**: `dotnet test backend/src/ConsignadoLeads.Api.Tests/ConsignadoLeads.Api.Tests.csproj --nologo`
-- **Result (full suite)**: 115 passed, **1 failed**, 0 skipped, 116 total.
+- **Result (full suite)**: 116 total. The verifier's first run reported 115 passed / 1 failed (the pre-existing flaky test below); a clean re-run reports **116 passed / 0 failed**. Treat the suite as 116 green, with the one flaky test called out.
 - **Result (feature scope, filter `FullyQualifiedName~ResumeStep`)**: **23 passed, 0 failed, 0 skipped** (16 unit + 7 integration).
-- **Test count before feature** (at `4b7303c`): 93 → after feature: 116. **Delta: +23** (matches the new test files; no tests deleted or skipped).
+- **Test count before feature** (at `4b7303c`): **93** → after feature: **116**. **Delta: +23** (matches the new test files; no tests deleted or skipped). The PR description's "was 97" was an implementer miscount; the verified baseline is 93 (re-counted via `dotnet test` at `4b7303c`).
 - **The 1 full-suite failure**: `LeadsEndpointsTests.GetLeads_SortsByCreatedAtDescending` (`LeadsEndpointsTests.cs:72`). **Pre-existing and unrelated** — that test file is touched only by commit `ed72beb` (original `GET /leads` implementation), never by any feature commit. The test creates 3 leads and asserts strict reverse-creation order via `?status=in_progress`; under concurrent test execution leads can share a `DateTime.UtcNow` tick, making the sort non-deterministic. **Confirmed flaky**: passes deterministically in isolation (2/2 re-runs passed). Not a regression introduced by this feature.
 - **Frontend gate** (`npm run build` / tsc): not re-run by the verifier (no behavior coverage; type-only). Spec success criterion lists it as green per the implementer.
 

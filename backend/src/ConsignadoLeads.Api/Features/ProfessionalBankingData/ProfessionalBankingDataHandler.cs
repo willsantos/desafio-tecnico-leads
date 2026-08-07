@@ -45,11 +45,12 @@ public class ProfessionalBankingDataHandler(MongoContext mongo)
             .Set(l => l.UpdatedAt, now)
             .Inc(l => l.Version, 1);
 
+        // Start the documents lookup before the update and await it after — the lookup depends only
+        // on `id`, so running it in parallel avoids a serial round-trip on this per-step wizard call
+        // (cubic P3) while keeping the documents-vs-confirmation resumeStep branch precise.
+        var activeDocsTask = mongo.GetActiveDocumentsAsync(id);
         var updated = await mongo.UpdateWithVersionCheckAsync(id, request.ExpectedVersion, update);
-
-        // Load active documents so LeadMapper can derive progress.resumeStep precisely for the
-        // one branch (documents-vs-confirmation) that depends on them (spec PRS-04/PRS-05).
-        var activeDocuments = await mongo.GetActiveDocumentsAsync(id);
+        var activeDocuments = await activeDocsTask;
         return LeadMapper.ToDto(updated, activeDocuments.Select(DocumentMapper.ToDto).ToList());
     }
 }
