@@ -176,6 +176,7 @@ Shape de um lead (exemplo, etapa de identificação concluída):
     "startedSteps": ["consultation", "simulation", "identification"],
     "completedSteps": ["consultation", "simulation", "identification"],
     "pendingItems": [],
+    "resumeStep": "professional-banking-data",
     "lastUpdatedAt": "2026-07-30T15:00:00Z"
   },
   "consultation": { "input": { "cpf": "12345678900" }, "result": { "outcome": "eligible", "availableMargin": 350.00, "checkedAt": "2026-07-30T14:50:00Z" } },
@@ -190,6 +191,8 @@ Shape de um lead (exemplo, etapa de identificação concluída):
   "updatedAt": "2026-07-30T15:00:00Z"
 }
 ```
+
+> **`progress.resumeStep`** (campo derivado, aditivo): próxima etapa acionável do lead (`consultation`, `simulation`, `identification`, `professional-banking-data`, `documents` ou `confirmation`), calculada pelo backend a partir de `status`, `completedSteps` e documentos ativos. **Não é persistido** — calculado em tempo de leitura no mapper, então leads antigos também o recebem sem migração. `currentStep` mantém a semântica de "última etapa concluída" (cada handler grava `CurrentStep = X` e adiciona X em `completedSteps` ao mesmo tempo); o backend nunca o avança além de `professional-banking-data`. Por isso `resumeStep` é a fonte canônica de "onde retomar" — clientes não precisam inferir.
 
 ---
 
@@ -367,6 +370,6 @@ Todo documento `leads` carrega `schemaVersion` (int, hoje `= 1`, `Lead.cs:20`). 
 - **Sem criptografia em repouso para CPF e dados bancários.** Eles ficam em texto claro no MongoDB (só os *logs* são mascarados — ver `Core/Logging/SensitiveDataMasker.cs`, que redige `cpf`, `documentNumber` e `bankingData` antes de qualquer `ILogger` gravar uma requisição/resposta). Em produção isso pediria ao menos *field-level encryption* do driver ou criptografia de disco no Mongo.
 - **Sem detecção automática de `abandoned`.** O enum de `status` inclui `abandoned`, mas nada no backend transiciona um lead para esse estado sozinho — não há *job*/TTL nem MongoDB Change Streams (também citado como diferencial opcional na seção 11) observando inatividade. Um lead parado fica congelado no último `status` alcançado até que o cliente volte.
 - **Sem `unique index` em `consultation.input.cpf`.** O índice existe para consulta rápida, mas não impede dois leads distintos para o mesmo CPF — resolver a pergunta 7 da seção 13 (evitar duplicidade) ficaria por conta de uma constraint adicional (unique index parcial, ou uma checagem de aplicação antes do `POST /leads/consultation`) fora do escopo implementado aqui.
-- **Frontend rastreia um cursor de etapa próprio, além de `progress.currentStep`.** O backend nunca avança `progress.currentStep` além de `"professional-banking-data"` — as etapas de documentos e confirmação não têm marcador de progresso próprio no servidor. `frontend/src/shared/leadContext.tsx` compensa isso com um `step` local no React context, sincronizado com `progress.currentStep` na carga/retomada e avançado manualmente pela UI depois disso (ver `resolveStepId` em `leadContext.tsx:37-42`).
+- **`progress.resumeStep` é derivado, não persistido.** O backend nunca avança `progress.currentStep` além de `"professional-banking-data"`, e `currentStep` tem semântica de "última etapa concluída" (não "etapa ativa"). Para evitar que cada cliente inverta essa convenção, o backend expõe `progress.resumeStep` (campo aditivo), calculado em `Core/ResumeStepResolver` no momento de montar o `LeadDto` a partir de `status`, `completedSteps` e documentos ativos. O frontend ainda rastreia um cursor local (`step` no React context) para navegação dentro do wizard, mas a **decisão de "onde retomar"** ao carregar um lead usa `resumeStep` (com fallback para derivação local em respostas antigas sem o campo — `resolveStepId` em `frontend/src/shared/leadContext.tsx`).
 - **Campos sem enum definido no contrato são texto livre no frontend.** `maritalStatus`, `employmentType` e `accountType` não têm uma lista de valores fechada na seção 5 do contrato, então os formulários (`IdentificationPage.tsx`, `ProfessionalBankingDataPage.tsx`) os tratam como `<input>` de texto simples em vez de `<select>` — o backend também os persiste como `string` livre (`Lead.cs`), sem validação de valores permitidos.
 - **Upload de documento e metadado não são transacionais** (Mongo standalone, sem sessions) — uma falha entre o upload no GridFS e a escrita em `lead_documents` deixa um blob órfão no GridFS (inofensivo, nunca referenciado), nunca o inverso (AD-002).
