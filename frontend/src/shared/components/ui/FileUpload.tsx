@@ -22,6 +22,22 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`
 }
 
+/** Matches the HTML `accept` semantics: extension tokens (.pdf) check the file name, MIME tokens
+ *  (image/jpeg, image/*) check the type. The native picker already does both; this brings drag-and-
+ *  drop to parity so a file allowed by the picker is never silently rejected when dropped. */
+function fileMatchesAccept(file: File, accept: string): boolean {
+  const tokens = accept.split(',').map((t) => t.trim()).filter(Boolean)
+  return tokens.some((token) => {
+    if (token.startsWith('.')) {
+      return file.name.toLowerCase().endsWith(token.toLowerCase())
+    }
+    if (token.endsWith('/*')) {
+      return file.type.startsWith(token.slice(0, -1))
+    }
+    return file.type === token
+  })
+}
+
 export function FileUpload({
   id,
   accept,
@@ -65,7 +81,7 @@ export function FileUpload({
     event.preventDefault()
     setIsDragging(false)
     const file = event.dataTransfer.files?.[0] ?? null
-    if (file && (!accept || accept.split(',').some((type) => file.type.match(type.trim())))) {
+    if (file && (!accept || fileMatchesAccept(file, accept))) {
       onFileSelect(file)
     }
   }
@@ -93,9 +109,9 @@ export function FileUpload({
           className={[styles.dropzone, isDragging ? styles.dragging : '', error ? styles.dropzoneError : ''].join(' ')}
           onClick={disabled ? undefined : handleClick}
           onKeyDown={disabled ? undefined : handleKeyDown}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onDragOver={disabled ? undefined : handleDragOver}
+          onDragLeave={disabled ? undefined : handleDragLeave}
+          onDrop={disabled ? undefined : handleDrop}
           role="button"
           tabIndex={disabled ? -1 : 0}
           aria-disabled={disabled}

@@ -18,6 +18,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const isMasked = Boolean(mask)
     const rawValue = String(value ?? '')
     const [displayValue, setDisplayValue] = useState(isMasked ? mask?.(rawValue) ?? rawValue : rawValue)
+    const describedBy = [rest['aria-describedby'], error ? `${inputId}-error` : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined
 
     useEffect(() => {
       if (isMasked) {
@@ -46,9 +49,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={[styles.input, error ? styles.inputError : ''].join(' ')}
-          aria-invalid={error ? 'true' : 'false'}
-          aria-describedby={error ? `${inputId}-error` : undefined}
           {...rest}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={describedBy}
           value={isMasked ? displayValue : value}
           onChange={handleChange}
         />
