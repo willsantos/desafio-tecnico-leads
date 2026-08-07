@@ -8,13 +8,10 @@ import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
+import { formatCurrency } from '../../shared/utils/formatters'
 import { EMPTY_SIMULATION_FORM, type SimulationFormValues } from './simulation.types'
 import { createSimulation, selectSimulation } from './simulationApi'
 import styles from './SimulationPage.module.css'
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-}
 
 export function SimulationPage() {
   const { lead, setStep, refreshLead } = useLead()
@@ -149,6 +146,14 @@ export function SimulationPage() {
               <Card key={simulation.id} className={styles.historyCard}>
                 <div className={styles.historyRow}>
                   <div>
+                    <Text variant="caption">Solicitado</Text>
+                    <Text variant="body">{formatCurrency(simulation.requestedAmount)}</Text>
+                  </div>
+                  <div>
+                    <Text variant="caption">Parcelas</Text>
+                    <Text variant="body">{simulation.installments}x</Text>
+                  </div>
+                  <div>
                     <Text variant="caption">Parcela</Text>
                     <Text variant="body">{formatCurrency(simulation.installmentAmount)}</Text>
                   </div>
@@ -175,7 +180,7 @@ export function SimulationPage() {
         <Button
           variant="primary"
           onClick={() => setStep('identification')}
-          disabled={lead.simulations.length === 0 || submitting}
+          disabled={!selectedSimulation || submitting}
         >
           Avançar para identificação
         </Button>

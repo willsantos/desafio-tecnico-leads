@@ -6,18 +6,13 @@ import { Button } from '../../shared/components/ui/Button'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
-import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits } from '../../shared/utils/formatters'
+import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits, formatCurrency } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { resolveStepId, useLead } from '../../shared/leadContext'
 import { CpfReuseModal } from './CpfReuseModal'
 import { BENEFIT_TYPES, EMPTY_CONSULTATION_FORM, type ConsultationFormValues } from './consultation.types'
 import { createConsultation, findActiveLeadsByCpf, getLeadById, updateConsultation } from './consultationApi'
 import styles from './ConsultationPage.module.css'
-
-function formatCurrency(value: number | null | undefined): string {
-  if (value == null) return ''
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-}
 
 export function ConsultationPage() {
   const { lead, setLead, setStep } = useLead()

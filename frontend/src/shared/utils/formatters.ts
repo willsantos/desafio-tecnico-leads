@@ -2,6 +2,15 @@ export function unmaskDigits(value: string): string {
   return value.replace(/\D/g, '')
 }
 
+const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+
+/** Formats a number as BRL currency. Shared so the simulation, consultation and confirmation pages
+ *  don't each keep their own Intl.NumberFormat copy (cubic P3). */
+export function formatCurrency(value: number | null | undefined): string {
+  if (value == null) return ''
+  return brlFormatter.format(value)
+}
+
 export function maskCpf(value: string): string {
   const digits = unmaskDigits(value)
   if (digits.length <= 3) return digits
