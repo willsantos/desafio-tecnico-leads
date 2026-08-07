@@ -6,7 +6,7 @@ import { Button } from '../../shared/components/ui/Button'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
-import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
+import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { resolveStepId, useLead } from '../../shared/leadContext'
 import { CpfReuseModal } from './CpfReuseModal'
@@ -47,6 +47,10 @@ export function ConsultationPage() {
     setSubmitting(true)
     setError(null)
     try {
+      if (!isValidBrDateDigits(values.birthDate)) {
+        setError('Informe uma data de nascimento válida.')
+        return
+      }
       const payload = { ...values, birthDate: brDateDigitsToIso(values.birthDate) }
       const dto = lead ? await updateConsultation(lead.id, payload, lead.version) : await createConsultation(payload)
       setLead(dto)

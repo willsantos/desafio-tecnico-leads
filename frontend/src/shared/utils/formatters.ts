@@ -33,6 +33,23 @@ export function brDateDigitsToIso(value: string): string {
   return `${digits.slice(4, 8)}-${digits.slice(2, 4)}-${digits.slice(0, 2)}`
 }
 
+/** True when the BR date digits form a real calendar date (DDMMAAAA). Replaces the validation the
+ *  native `type="date"` picker used to provide before the inputs switched to a masked text field. */
+export function isValidBrDateDigits(value: string): boolean {
+  const digits = unmaskDigits(value)
+  if (digits.length !== 8) return false
+  const day = Number(digits.slice(0, 2))
+  const month = Number(digits.slice(2, 4))
+  const year = Number(digits.slice(4, 8))
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false
+  const parsed = new Date(Date.UTC(year, month - 1, day))
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  )
+}
+
 /** Converts an ISO date (YYYY-MM-DD) coming from the API into raw BR digits (DDMMAAAA) for masked inputs. */
 export function isoToBrDateDigits(iso: string): string {
   if (!iso) return ''

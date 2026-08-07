@@ -6,7 +6,7 @@ import { Card } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
-import { maskCpf, maskDate, maskPhone, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
+import { maskCpf, maskDate, maskPhone, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
 import { DOCUMENT_TYPES, EMPTY_IDENTIFICATION_FORM, type IdentificationFormValues } from './identification.types'
@@ -84,6 +84,14 @@ export function IdentificationPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    if (!isValidBrDateDigits(form.birthDate)) {
+      setError('Informe uma data de nascimento válida.')
+      return
+    }
+    if (!isValidBrDateDigits(form.issueDate)) {
+      setError('Informe uma data de emissão válida.')
+      return
+    }
     setSubmitting(true)
     try {
       const dto = await submitIdentification(

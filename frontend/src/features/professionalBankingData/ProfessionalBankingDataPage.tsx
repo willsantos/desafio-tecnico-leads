@@ -7,7 +7,7 @@ import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
-import { maskDate, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
+import { maskDate, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits } from '../../shared/utils/formatters'
 import { useLead } from '../../shared/leadContext'
 import { ACCOUNT_TYPES, BANK_OPTIONS, EMPTY_PROFESSIONAL_BANKING_FORM, EMPLOYMENT_TYPES, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
 import { submitProfessionalBankingData } from './professionalBankingDataApi'
@@ -76,6 +76,10 @@ export function ProfessionalBankingDataPage() {
     const monthlyIncome = Number(form.professionalData.monthlyIncome)
     if (!Number.isFinite(monthlyIncome) || monthlyIncome < 0) {
       setError('Informe uma renda mensal válida.')
+      return
+    }
+    if (!isValidBrDateDigits(form.professionalData.admissionDate)) {
+      setError('Informe uma data de admissão válida.')
       return
     }
 
