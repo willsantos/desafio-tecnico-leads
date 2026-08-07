@@ -7,6 +7,7 @@ import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
+import { maskDate, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
 import { useLead } from '../../shared/leadContext'
 import { ACCOUNT_TYPES, EMPTY_PROFESSIONAL_BANKING_FORM, EMPLOYMENT_TYPES, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
 import { submitProfessionalBankingData } from './professionalBankingDataApi'
@@ -24,7 +25,7 @@ export function ProfessionalBankingDataPage() {
             registrationNumber: lead.professionalData.registrationNumber,
             role: lead.professionalData.role,
             monthlyIncome: String(lead.professionalData.monthlyIncome),
-            admissionDate: lead.professionalData.admissionDate,
+            admissionDate: isoToBrDateDigits(lead.professionalData.admissionDate),
           },
           bankingData: {
             bank: lead.bankingData.bank,
@@ -81,7 +82,11 @@ export function ProfessionalBankingDataPage() {
     setSubmitting(true)
     try {
       const dto = await submitProfessionalBankingData(leadId, {
-        professionalData: { ...form.professionalData, monthlyIncome },
+        professionalData: {
+          ...form.professionalData,
+          monthlyIncome,
+          admissionDate: brDateDigitsToIso(form.professionalData.admissionDate),
+        },
         bankingData: {
           ...form.bankingData,
           accountHolder: defaultAccountHolder,
@@ -119,7 +124,18 @@ export function ProfessionalBankingDataPage() {
             <Input label="Matrícula" name="registrationNumber" value={form.professionalData.registrationNumber} onChange={(e) => updateProfessional('registrationNumber', e.target.value)} required />
             <Input label="Cargo" name="role" value={form.professionalData.role} onChange={(e) => updateProfessional('role', e.target.value)} required />
             <Input label="Renda mensal (R$)" name="monthlyIncome" type="number" min="0" step="0.01" value={form.professionalData.monthlyIncome} onChange={(e) => updateProfessional('monthlyIncome', e.target.value)} required />
-            <Input label="Data de admissão" name="admissionDate" type="date" value={form.professionalData.admissionDate} onChange={(e) => updateProfessional('admissionDate', e.target.value)} required />
+            <Input
+              label="Data de admissão"
+              name="admissionDate"
+              type="text"
+              inputMode="numeric"
+              mask={maskDate}
+              value={form.professionalData.admissionDate}
+              onValueChange={(value) => value.length <= 8 && updateProfessional('admissionDate', value)}
+              required
+              maxLength={10}
+              placeholder="DD/MM/AAAA"
+            />
           </div>
         </Card>
 

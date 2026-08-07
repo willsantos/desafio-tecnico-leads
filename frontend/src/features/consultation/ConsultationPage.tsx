@@ -6,7 +6,7 @@ import { Button } from '../../shared/components/ui/Button'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
-import { maskCpf } from '../../shared/utils/formatters'
+import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { resolveStepId, useLead } from '../../shared/leadContext'
 import { CpfReuseModal } from './CpfReuseModal'
@@ -26,7 +26,7 @@ export function ConsultationPage() {
     lead?.consultation
       ? {
           cpf: lead.consultation.input.cpf,
-          birthDate: lead.consultation.input.birthDate,
+          birthDate: isoToBrDateDigits(lead.consultation.input.birthDate),
           benefitType: lead.consultation.input.benefitType,
           benefitNumber: lead.consultation.input.benefitNumber,
           payingInstitution: lead.consultation.input.payingInstitution,
@@ -47,7 +47,8 @@ export function ConsultationPage() {
     setSubmitting(true)
     setError(null)
     try {
-      const dto = lead ? await updateConsultation(lead.id, values, lead.version) : await createConsultation(values)
+      const payload = { ...values, birthDate: brDateDigitsToIso(values.birthDate) }
+      const dto = lead ? await updateConsultation(lead.id, payload, lead.version) : await createConsultation(payload)
       setLead(dto)
       setStep('simulation')
     } catch (err) {
@@ -133,10 +134,14 @@ export function ConsultationPage() {
           <Input
             label="Data de nascimento"
             name="birthDate"
-            type="date"
+            type="text"
+            inputMode="numeric"
+            mask={maskDate}
             value={form.birthDate}
-            onChange={(e) => updateField('birthDate', e.target.value)}
+            onValueChange={(value) => value.length <= 8 && updateField('birthDate', value)}
             required
+            maxLength={10}
+            placeholder="DD/MM/AAAA"
           />
         </div>
 

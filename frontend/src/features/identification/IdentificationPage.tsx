@@ -6,7 +6,7 @@ import { Card } from '../../shared/components/ui/Card'
 import { Input } from '../../shared/components/ui/Input'
 import { Select } from '../../shared/components/ui/Select'
 import { Text } from '../../shared/components/ui/Text'
-import { maskCpf, maskPhone } from '../../shared/utils/formatters'
+import { maskCpf, maskDate, maskPhone, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
 import { DOCUMENT_TYPES, EMPTY_IDENTIFICATION_FORM, type IdentificationFormValues } from './identification.types'
@@ -35,7 +35,7 @@ export function IdentificationPage() {
       ? {
           fullName: lead.identification.fullName,
           cpf: lead.identification.cpf,
-          birthDate: lead.identification.birthDate,
+          birthDate: isoToBrDateDigits(lead.identification.birthDate),
           email: lead.identification.email,
           phone: lead.identification.phone,
           address: {
@@ -53,7 +53,7 @@ export function IdentificationPage() {
           documentNumber: lead.identification.documentNumber,
           issuingAuthority: lead.identification.issuingAuthority,
           issuingState: lead.identification.issuingState,
-          issueDate: lead.identification.issueDate,
+          issueDate: isoToBrDateDigits(lead.identification.issueDate),
         }
       : EMPTY_IDENTIFICATION_FORM,
   )
@@ -86,7 +86,15 @@ export function IdentificationPage() {
     setError(null)
     setSubmitting(true)
     try {
-      const dto = await submitIdentification(leadId, form, lead?.version)
+      const dto = await submitIdentification(
+        leadId,
+        {
+          ...form,
+          birthDate: brDateDigitsToIso(form.birthDate),
+          issueDate: brDateDigitsToIso(form.issueDate),
+        },
+        lead?.version,
+      )
       setLead(dto)
     } catch (err) {
       setError(getErrorMessage(err))
@@ -117,7 +125,18 @@ export function IdentificationPage() {
               maxLength={14}
               placeholder="000.000.000-00"
             />
-            <Input label="Data de nascimento" name="birthDate" type="date" value={form.birthDate} onChange={(e) => updateField('birthDate', e.target.value)} required />
+            <Input
+              label="Data de nascimento"
+              name="birthDate"
+              type="text"
+              inputMode="numeric"
+              mask={maskDate}
+              value={form.birthDate}
+              onValueChange={(value) => value.length <= 8 && updateField('birthDate', value)}
+              required
+              maxLength={10}
+              placeholder="DD/MM/AAAA"
+            />
             <Input
               label="Telefone"
               name="phone"
@@ -159,7 +178,18 @@ export function IdentificationPage() {
             <Input label="Número do documento" name="documentNumber" value={form.documentNumber} onChange={(e) => updateField('documentNumber', e.target.value)} required />
             <Input label="Órgão emissor" name="issuingAuthority" value={form.issuingAuthority} onChange={(e) => updateField('issuingAuthority', e.target.value)} required />
             <Input label="UF de emissão" name="issuingState" value={form.issuingState} onChange={(e) => updateField('issuingState', e.target.value)} required maxLength={2} />
-            <Input label="Data de emissão" name="issueDate" type="date" value={form.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} required />
+            <Input
+              label="Data de emissão"
+              name="issueDate"
+              type="text"
+              inputMode="numeric"
+              mask={maskDate}
+              value={form.issueDate}
+              onValueChange={(value) => value.length <= 8 && updateField('issueDate', value)}
+              required
+              maxLength={10}
+              placeholder="DD/MM/AAAA"
+            />
           </div>
         </Card>
 
