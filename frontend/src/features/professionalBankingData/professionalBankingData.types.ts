@@ -40,6 +40,30 @@ export const ACCOUNT_TYPES = [
   { value: 'outra', label: 'Outra' },
 ] as const
 
+/** Principais bancos do Brasil (código Febraban/COMPE - nome). Valor enviado p/ API no formato "codigo - Nome". */
+export const BANKS = [
+  { code: '001', name: 'Banco do Brasil' },
+  { code: '237', name: 'Banco Bradesco' },
+  { code: '341', name: 'Itaú Unibanco' },
+  { code: '104', name: 'Caixa Econômica Federal' },
+  { code: '033', name: 'Banco Santander' },
+  { code: '260', name: 'Nu Pagamentos (Nubank)' },
+  { code: '076', name: 'Banco Inter' },
+  { code: '212', name: 'Banco Original' },
+  { code: '336', name: 'Banco C6' },
+  { code: '748', name: 'Sicredi' },
+  { code: '756', name: 'Sicoob' },
+  { code: '422', name: 'Banco Safra' },
+  { code: '655', name: 'Banco Votorantim' },
+  { code: '389', name: 'Banco Mercantil do Brasil' },
+  { code: '746', name: 'Banco Modal' },
+] as const
+
+export const BANK_OPTIONS = BANKS.map((b) => ({
+  value: `${b.code} - ${b.name}`,
+  label: `${b.code} - ${b.name}`,
+}))
+
 export const EMPTY_PROFESSIONAL_BANKING_FORM: ProfessionalBankingDataFormValues = {
   professionalData: { employmentType: '', company: '', registrationNumber: '', role: '', monthlyIncome: '', admissionDate: '' },
   bankingData: { bank: '', agency: '', account: '', accountDigit: '', accountType: '', accountHolder: '', pixKey: '' },

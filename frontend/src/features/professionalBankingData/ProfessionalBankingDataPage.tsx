@@ -9,7 +9,7 @@ import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { maskDate, brDateDigitsToIso, isoToBrDateDigits } from '../../shared/utils/formatters'
 import { useLead } from '../../shared/leadContext'
-import { ACCOUNT_TYPES, EMPTY_PROFESSIONAL_BANKING_FORM, EMPLOYMENT_TYPES, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
+import { ACCOUNT_TYPES, BANK_OPTIONS, EMPTY_PROFESSIONAL_BANKING_FORM, EMPLOYMENT_TYPES, type ProfessionalBankingDataFormValues } from './professionalBankingData.types'
 import { submitProfessionalBankingData } from './professionalBankingDataApi'
 import styles from './ProfessionalBankingDataPage.module.css'
 
@@ -142,7 +142,19 @@ export function ProfessionalBankingDataPage() {
 
         <Card title="Dados bancários">
           <div className={styles.grid2}>
-            <Input label="Banco" name="bank" value={form.bankingData.bank} onChange={(e) => updateBanking('bank', e.target.value)} required />
+            <Select
+              label="Banco"
+              name="bank"
+              value={form.bankingData.bank}
+              onChange={(e) => updateBanking('bank', e.target.value)}
+              options={
+                form.bankingData.bank && !BANK_OPTIONS.some((o) => o.value === form.bankingData.bank)
+                  ? [...BANK_OPTIONS, { value: form.bankingData.bank, label: form.bankingData.bank }]
+                  : BANK_OPTIONS
+              }
+              placeholder="Selecione"
+              required
+            />
             <Input label="Agência" name="agency" value={form.bankingData.agency} onChange={(e) => updateBanking('agency', e.target.value)} required />
             <Input label="Conta" name="account" value={form.bankingData.account} onChange={(e) => updateBanking('account', e.target.value)} required />
             <Input label="Dígito" name="accountDigit" value={form.bankingData.accountDigit} onChange={(e) => updateBanking('accountDigit', e.target.value)} required />
