@@ -1,11 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import type { LeadSummaryDto } from '../../shared/api/types'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Input } from '../../shared/components/ui/Input'
+import { Select } from '../../shared/components/ui/Select'
+import { Text } from '../../shared/components/ui/Text'
+import { maskCpf, maskDate, brDateDigitsToIso, isoToBrDateDigits, isValidBrDateDigits, formatCurrency } from '../../shared/utils/formatters'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { resolveStepId, useLead } from '../../shared/leadContext'
 import { CpfReuseModal } from './CpfReuseModal'
 import { BENEFIT_TYPES, EMPTY_CONSULTATION_FORM, type ConsultationFormValues } from './consultation.types'
 import { createConsultation, findActiveLeadsByCpf, getLeadById, updateConsultation } from './consultationApi'
+import styles from './ConsultationPage.module.css'
 
 export function ConsultationPage() {
   const { lead, setLead, setStep } = useLead()
@@ -14,7 +21,7 @@ export function ConsultationPage() {
     lead?.consultation
       ? {
           cpf: lead.consultation.input.cpf,
-          birthDate: lead.consultation.input.birthDate,
+          birthDate: isoToBrDateDigits(lead.consultation.input.birthDate),
           benefitType: lead.consultation.input.benefitType,
           benefitNumber: lead.consultation.input.benefitNumber,
           payingInstitution: lead.consultation.input.payingInstitution,
@@ -35,7 +42,12 @@ export function ConsultationPage() {
     setSubmitting(true)
     setError(null)
     try {
-      const dto = lead ? await updateConsultation(lead.id, values, lead.version) : await createConsultation(values)
+      if (!isValidBrDateDigits(values.birthDate)) {
+        setError('Informe uma data de nascimento válida.')
+        return
+      }
+      const payload = { ...values, birthDate: brDateDigitsToIso(values.birthDate) }
+      const dto = lead ? await updateConsultation(lead.id, payload, lead.version) : await createConsultation(payload)
       setLead(dto)
       setStep('simulation')
     } catch (err) {
@@ -49,8 +61,6 @@ export function ConsultationPage() {
     event.preventDefault()
     setError(null)
 
-    // Retrying/correcting an already-created lead skips the dedup check entirely — it IS the
-    // lead being continued, so there is nothing to deduplicate against.
     if (lead) {
       await submitConsultation(form)
       return
@@ -64,8 +74,6 @@ export function ConsultationPage() {
         return
       }
     } catch (err) {
-      // P2-1 is a UX nicety on top of the frozen contract, not part of it — a failed dedup
-      // check must never block etapa 1 submission.
       console.warn('Falha ao checar CPF duplicado, prosseguindo sem o modal.', err)
     } finally {
       setCheckingCpf(false)
@@ -74,14 +82,11 @@ export function ConsultationPage() {
     await submitConsultation(form)
   }
 
-  async function handleContinueExisting() {
-    if (!activeLeads || activeLeads.length === 0) {
-      return
-    }
+  async function handleContinueExisting(leadId: string) {
     setSubmitting(true)
     setError(null)
     try {
-      const fullLead = await getLeadById(activeLeads[0].id)
+      const fullLead = await getLeadById(leadId)
       setLead(fullLead)
       setStep(resolveStepId(fullLead))
       setActiveLeads(null)
@@ -97,75 +102,109 @@ export function ConsultationPage() {
     void submitConsultation(form)
   }
 
+  const canSubmit = form.consultationAuthorized && !submitting && !checkingCpf
+
   return (
-    <section>
-      <h2>Etapa 1 — Consulta de elegibilidade</h2>
+    <section className={styles.wrapper}>
+      <Text variant="title" as="h2" className={styles.heading}>
+        Consulta de elegibilidade
+      </Text>
 
-      {activeLeads && (
-        <CpfReuseModal
-          leadsFound={activeLeads.length}
-          onContinue={handleContinueExisting}
-          onStartNew={handleStartNew}
-          busy={submitting}
-        />
-      )}
+      <CpfReuseModal
+        isOpen={activeLeads !== null}
+        leads={activeLeads ?? []}
+        onContinue={handleContinueExisting}
+        onStartNew={handleStartNew}
+        busy={submitting}
+      />
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          CPF
-          <input
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.row}>
+          <Input
+            label="CPF"
+            name="cpf"
             value={form.cpf}
-            onChange={(e) => updateField('cpf', e.target.value)}
+            mask={maskCpf}
+            onValueChange={(value) => value.length <= 11 && updateField('cpf', value)}
             required
-            maxLength={11}
-            placeholder="Somente números"
+            maxLength={14}
+            placeholder="000.000.000-00"
           />
-        </label>
-        <label>
-          Data de nascimento
-          <input type="date" value={form.birthDate} onChange={(e) => updateField('birthDate', e.target.value)} required />
-        </label>
-        <label>
-          Tipo de benefício
-          <select value={form.benefitType} onChange={(e) => updateField('benefitType', e.target.value)} required>
-            {BENEFIT_TYPES.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Número do benefício
-          <input value={form.benefitNumber} onChange={(e) => updateField('benefitNumber', e.target.value)} required />
-        </label>
-        <label>
-          Instituição pagadora
-          <input value={form.payingInstitution} onChange={(e) => updateField('payingInstitution', e.target.value)} required />
-        </label>
-        <label>
+          <Input
+            label="Data de nascimento"
+            name="birthDate"
+            type="text"
+            inputMode="numeric"
+            mask={maskDate}
+            value={form.birthDate}
+            onValueChange={(value) => value.length <= 8 && updateField('birthDate', value)}
+            required
+            maxLength={10}
+            placeholder="DD/MM/AAAA"
+          />
+        </div>
+
+        <div className={styles.row}>
+          <Select
+            label="Tipo de benefício"
+            name="benefitType"
+            value={form.benefitType}
+            onChange={(e) => updateField('benefitType', e.target.value)}
+            options={BENEFIT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            required
+          />
+          <Input
+            label="Número do benefício"
+            name="benefitNumber"
+            value={form.benefitNumber}
+            onChange={(e) => updateField('benefitNumber', e.target.value)}
+            required
+          />
+        </div>
+
+        <Input
+          label="Instituição pagadora"
+          name="payingInstitution"
+          value={form.payingInstitution}
+          onChange={(e) => updateField('payingInstitution', e.target.value)}
+          required
+        />
+
+        <label className={styles.checkbox}>
           <input
             type="checkbox"
             checked={form.consultationAuthorized}
             onChange={(e) => updateField('consultationAuthorized', e.target.checked)}
             required
           />
-          Autorizo a consulta dos meus dados
+          <Text variant="body">Autorizo a consulta dos meus dados</Text>
         </label>
 
-        <button type="submit" disabled={submitting || checkingCpf}>
-          {checkingCpf ? 'Verificando CPF…' : lead ? 'Corrigir e reconsultar' : 'Consultar elegibilidade'}
-        </button>
+        <div className={styles.actions}>
+          <Button type="submit" loading={submitting || checkingCpf} disabled={!canSubmit}>
+            {checkingCpf ? 'Verificando CPF…' : lead ? 'Corrigir e reconsultar' : 'Consultar elegibilidade'}
+          </Button>
+        </div>
       </form>
 
       <LoadingError error={error} />
 
       {lead?.consultation?.result && (
-        <p>
-          Resultado da consulta: <strong>{lead.consultation.result.outcome}</strong>
-          {lead.consultation.result.availableMargin != null &&
-            ` — margem disponível: R$ ${lead.consultation.result.availableMargin.toFixed(2)}`}
-        </p>
+        <div className={styles.result}>
+          <Alert variant={lead.consultation.result.outcome === 'eligible' ? 'success' : 'warning'} title="Resultado da consulta">
+            <Text variant="body">
+              {lead.consultation.result.outcome === 'eligible'
+                ? 'Você está elegível para continuar o cadastro.'
+                : `Desfecho da consulta: ${lead.consultation.result.outcome}`}
+              {lead.consultation.result.availableMargin != null && (
+                <>
+                  {' '}
+                  — Margem disponível: <strong>{formatCurrency(lead.consultation.result.availableMargin)}</strong>
+                </>
+              )}
+            </Text>
+          </Alert>
+        </div>
       )}
     </section>
   )

@@ -18,3 +18,7 @@ package-lock.json
 .gemini/
 .kiro/
 .opencode/
+
+# local-only compose override (dev port remap, never commit)
+docker-compose.override.yml
+docker-compose.override.*.yml

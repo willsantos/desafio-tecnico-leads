@@ -34,13 +34,21 @@
 - **Date**: 2026-08-05
 - **Status**: active
 
+### AD-005
+- **Decision**: New feature spec for frontend UI/UX redesign (`ui-redesign`) using CSS Modules + CSS custom properties, with green as the bank primary color.
+- **Reason**: The existing frontend is functional but visually crude; a cohesive design system improves trust and usability without touching the frozen API contract.
+- **Trade-off**: Adds a one-time refactoring of all 6 pages and shared components; benefits consistency but is a non-trivial frontend-only change.
+- **Scope**: `frontend/src/`; `.specs/features/ui-redesign/`
+- **Date**: 2026-08-06
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: lead-recovery (`.specs/features/lead-recovery/`)
 - **Phase / Task**: Done — Execute complete (24/24 tasks), `/simplify` pass applied, Verifier PASS
 - **Completed**: T1-T24, all committed (see `tasks.md` checkboxes and `git log 3a311bc..HEAD`)
 - **In-progress**: none
-- **Next step**: Non-blocking follow-ups from `validation.md` are optional polish, not required for delivery — e.g. malformed-CPF test, identification-step concurrency race test, dead `SensitiveDataMasker` call site, exact `extensions.reasons` assertion. Otherwise feature is ready for submission.
+- **Next step**: UI/UX redesign spec created in `.specs/features/ui-redesign/` (AD-005); implementation can start with Phase 1 (design-system foundation). Non-blocking follow-ups from `validation.md` are optional polish, not required for delivery.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: main

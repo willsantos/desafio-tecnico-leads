@@ -1,0 +1,27 @@
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.default {
+  border-left: 4px solid transparent;
+}
+
+.primary {
+  border-left: 4px solid var(--color-primary-500);
+}
+
+.danger {
+  border-left: 4px solid var(--color-error-500);
+}
+
+.header {
+  padding: var(--space-md) var(--space-lg) 0;
+}
+
+.body {
+  padding: var(--space-lg);
+}

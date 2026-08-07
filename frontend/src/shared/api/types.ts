@@ -9,6 +9,9 @@ export interface ProgressDto {
   completedSteps: string[]
   pendingItems: string[]
   lastUpdatedAt: string
+  /** Server-derived next actionable step (spec progress-resume-step PRS-01..08). Optional only
+   *  for backward compatibility with older API responses; when present, the frontend uses it. */
+  resumeStep?: string
 }
 
 export interface ConsultationInputDto {
@@ -136,6 +139,9 @@ export interface LeadDto {
 export interface LeadSummaryDto {
   id: string
   status: string
+  /** Additive extension the backend includes for the list UI; the README seção 5 summary example
+   *  does not list it, so consumers must guard for missing cpf (cubic P2). */
+  cpf?: string
   progress: { currentStep: string }
   createdAt: string
   updatedAt: string

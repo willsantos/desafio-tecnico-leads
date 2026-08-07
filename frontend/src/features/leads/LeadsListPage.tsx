@@ -1,0 +1,276 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getErrorMessage } from '../../shared/api/httpClient'
+import type { LeadSummaryDto, PagedLeadsResponse } from '../../shared/api/types'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Input } from '../../shared/components/ui/Input'
+import { LoadingError } from '../../shared/components/LoadingError'
+import { Select } from '../../shared/components/ui/Select'
+import { Text } from '../../shared/components/ui/Text'
+import { resolveStepId, useLead } from '../../shared/leadContext'
+import { maskCpf } from '../../shared/utils/formatters'
+import { STEP_LABELS, STATUS_LABELS } from '../../shared/utils/leadLabels'
+import { getLeadById, listLeads, type LeadsFilters } from './leadsApi'
+import { LeadSummaryCard } from './components/LeadSummaryCard'
+import { LeadSummaryRow } from './components/LeadSummaryRow'
+import styles from './LeadsListPage.module.css'
+
+const PAGE_SIZE = 20
+
+const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))
+
+const STEP_OPTIONS = [
+  { value: '', label: 'Todas' },
+  ...Object.entries(STEP_LABELS).map(([value, label]) => ({ value, label })),
+]
+
+function normalizeStepFilter(step: string): string {
+  // The UI uses friendly step ids; the backend stores "professional-banking-data".
+  const map: Record<string, string> = {
+    consultation: 'consultation',
+    simulation: 'simulation',
+    identification: 'identification',
+    professionalBankingData: 'professional-banking-data',
+  }
+  return map[step] ?? step
+}
+
+function formatCpfFilter(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  return digits.slice(0, 11)
+}
+
+export function LeadsListPage() {
+  const navigate = useNavigate()
+  const { setLead, setStep, resetLead } = useLead()
+
+  const [filters, setFilters] = useState<LeadsFilters>({
+    status: '',
+    currentStep: '',
+    cpf: '',
+  })
+  const [page, setPage] = useState(1)
+  const [response, setResponse] = useState<PagedLeadsResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resumingId, setResumingId] = useState<string | null>(null)
+  // Monotonic request id so a slow in-flight list fetch can't overwrite the result of a newer one
+  // when filters change quickly (cubic P2: stale responses leaking into the visible list).
+  const listReqIdRef = useRef(0)
+
+  const handleNewProposal = useCallback(() => {
+    resetLead()
+    navigate('/proposta')
+  }, [navigate, resetLead])
+
+  const handleResume = useCallback(
+    async (leadId: string) => {
+      setResumingId(leadId)
+      setError(null)
+      try {
+        const lead = await getLeadById(leadId)
+        setLead(lead)
+        setStep(resolveStepId(lead))
+        navigate('/proposta')
+      } catch (err) {
+        setError(getErrorMessage(err))
+        setResumingId(null)
+      }
+    },
+    [navigate, setLead, setStep],
+  )
+
+  const fetchLeads = useCallback(async () => {
+    const reqId = ++listReqIdRef.current
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await listLeads(
+        {
+          status: filters.status || undefined,
+          currentStep: filters.currentStep ? normalizeStepFilter(filters.currentStep) : undefined,
+          cpf: filters.cpf || undefined,
+        },
+        page,
+        PAGE_SIZE,
+      )
+      // Drop stale results: a newer request (filter/page change) supersedes this one.
+      if (reqId !== listReqIdRef.current) return
+      setResponse(result)
+    } catch (err) {
+      if (reqId !== listReqIdRef.current) return
+      setError(getErrorMessage(err))
+    } finally {
+      if (reqId === listReqIdRef.current) {
+        setLoading(false)
+      }
+    }
+  }, [filters, page])
+
+  // Debounce filter/page changes so typing into the CPF box doesn't fire one request per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void fetchLeads()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [fetchLeads])
+
+  function updateFilter<K extends keyof LeadsFilters>(key: K, value: LeadsFilters[K]) {
+    setFilters((previous) => ({ ...previous, [key]: value }))
+    setPage(1)
+  }
+
+  function handleCpfChange(value: string) {
+    updateFilter('cpf', formatCpfFilter(value))
+  }
+
+  function handleClearFilters() {
+    setFilters({ status: '', currentStep: '', cpf: '' })
+    setPage(1)
+  }
+
+  const leads = response?.items ?? []
+  const totalPages = response?.totalPages ?? 0
+
+  return (
+    <section className={styles.wrapper}>
+      <div className={styles.heading}>
+        <Text variant="title" as="h2">
+          Propostas em andamento
+        </Text>
+        <Button onClick={handleNewProposal} className={styles.newProposalButton}>
+          Nova proposta
+        </Button>
+      </div>
+
+      <div className={styles.filters}>
+        <Select
+          label="Status"
+          name="status"
+          value={filters.status}
+          onChange={(e) => updateFilter('status', e.target.value)}
+          options={[{ value: '', label: 'Todos' }, ...STATUS_OPTIONS]}
+        />
+        <Select
+          label="Etapa atual"
+          name="currentStep"
+          value={filters.currentStep}
+          onChange={(e) => updateFilter('currentStep', e.target.value)}
+          options={STEP_OPTIONS}
+        />
+        <Input
+          label="CPF"
+          name="cpf"
+          value={maskCpf(filters.cpf ?? '')}
+          onChange={(e) => handleCpfChange(e.target.value)}
+          placeholder="000.000.000-00"
+          maxLength={14}
+        />
+        <div className={styles.filterActions}>
+          <Button variant="secondary" size="sm" onClick={handleClearFilters}>
+            Limpar filtros
+          </Button>
+        </div>
+      </div>
+
+      <LoadingError loading={loading} error={error} onRetry={fetchLeads}>
+        {leads.length === 0 ? (
+          <Alert variant="info" title="Nenhuma proposta encontrada">
+            <Text variant="body">
+              Não encontramos propostas com os filtros selecionados.{' '}
+              <button type="button" onClick={handleNewProposal} className={styles.linkButton}>
+                Inicie uma nova proposta
+              </button>
+              .
+            </Text>
+          </Alert>
+        ) : (
+          <>
+            <div className={styles.mobileList}>
+              {leads.map((lead) => (
+                <LeadListItem
+                  key={lead.id}
+                  lead={lead}
+                  onResume={handleResume}
+                  busy={resumingId === lead.id}
+                  disableAll={resumingId !== null}
+                />
+              ))}
+            </div>
+
+            <div className={styles.desktopTable}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th className={styles.th}>CPF</th>
+                    <th className={styles.th}>Status</th>
+                    <th className={styles.th}>Etapa</th>
+                    <th className={styles.th}>Atualizado em</th>
+                    <th className={styles.th}>Criado em</th>
+                    <th className={styles.th}>Registro</th>
+                    <th className={styles.th} aria-label="Ações" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                  <LeadListItem
+                    key={lead.id}
+                    lead={lead}
+                    row
+                    onResume={handleResume}
+                    busy={resumingId === lead.id}
+                    disableAll={resumingId !== null}
+                  />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1 || loading}
+                >
+                  Anterior
+                </Button>
+                <Text variant="body">
+                  Página {page} de {totalPages}
+                </Text>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages || loading}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </LoadingError>
+    </section>
+  )
+}
+
+interface LeadListItemProps {
+  lead: LeadSummaryDto
+  row?: boolean
+  onResume: (leadId: string) => void
+  busy: boolean
+  /** When true, all Continue buttons are disabled because a resume is in flight on another row
+   *  (cubic P2: prevents out-of-order resume responses overwriting the wizard context). */
+  disableAll?: boolean
+}
+
+function LeadListItem({ lead, row, onResume, busy, disableAll }: LeadListItemProps) {
+  if (row) {
+    return <LeadSummaryRow lead={lead} onResume={onResume} busy={busy} disableAll={disableAll} />
+  }
+
+  return <LeadSummaryCard lead={lead} onResume={onResume} busy={busy} disableAll={disableAll} />
+}

@@ -1,0 +1,15 @@
+.card {
+  flex: 1;
+  min-width: 16rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,4 +1,6 @@
-import { useMemo, type ComponentType } from 'react'
+import { useEffect, useMemo, type ComponentType } from 'react'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import { LeadsListPage } from './features/leads/LeadsListPage'
 import { ConfirmationPage } from './features/confirmation/ConfirmationPage'
 import { ConsultationPage } from './features/consultation/ConsultationPage'
 import { DocumentsPage } from './features/documents/DocumentsPage'
@@ -7,7 +9,9 @@ import { ProfessionalBankingDataPage } from './features/professionalBankingData/
 import { SimulationPage } from './features/simulation/SimulationPage'
 import type { ProgressDto } from './shared/api/types'
 import { Stepper, type StepperStep } from './shared/components/Stepper'
+import { Text } from './shared/components/ui/Text'
 import { CURRENT_STEP_TO_STEP_ID, LeadProvider, STEP_IDS, useLead, type StepId } from './shared/leadContext'
+import styles from './App.module.css'
 
 const STEP_LABELS: Record<StepId, string> = {
   consultation: 'Consulta',
@@ -47,8 +51,15 @@ function deriveCompletedStepIds(step: StepId, progress: ProgressDto | null, hasF
   return completed
 }
 
-function AppShell() {
-  const { lead, step, setStep } = useLead()
+function WizardPage() {
+  const { lead, step, setStep, resetLead } = useLead()
+
+  useEffect(() => {
+    // When opening the wizard without a loaded lead, start a fresh proposal.
+    if (!lead) {
+      resetLead()
+    }
+  }, [lead, resetLead])
 
   const completedStepIds = useMemo(
     () => deriveCompletedStepIds(step, lead?.progress ?? null, Boolean(lead?.confirmation.finalRegistration)),
@@ -67,16 +78,44 @@ function AppShell() {
   const StepPage = STEP_PAGES[step]
 
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem' }}>
-      <h1>Recuperação de Leads — Empréstimo Consignado</h1>
+    <div className={styles.wizardWrapper}>
+      <div className={styles.wizardHeader}>
+        <Link to="/" className={styles.backLink}>
+          ← Voltar para propostas
+        </Link>
+      </div>
       <Stepper
         steps={STEPPER_STEPS}
         currentStepId={step}
         completedStepIds={completedStepIds}
         onStepClick={lead ? handleStepClick : undefined}
       />
-      <StepPage />
-    </main>
+      <section className={styles.content}>
+        <StepPage />
+      </section>
+    </div>
+  )
+}
+
+function AppShell() {
+  return (
+    <div className={styles.layout}>
+      <header className={styles.header}>
+        <Text variant="display" as="h1" className={styles.title}>
+          Recuperação de Leads
+        </Text>
+        <Text variant="muted" as="p">
+          Empréstimo Consignado
+        </Text>
+      </header>
+      <main className={styles.main}>
+        <Routes>
+          <Route path="/" element={<LeadsListPage />} />
+          <Route path="/leads" element={<Navigate to="/" replace />} />
+          <Route path="/proposta" element={<WizardPage />} />
+        </Routes>
+      </main>
+    </div>
   )
 }
 

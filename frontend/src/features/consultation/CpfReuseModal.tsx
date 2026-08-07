@@ -1,51 +1,83 @@
-import type { CSSProperties } from 'react'
+import type { LeadSummaryDto } from '../../shared/api/types'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { Modal } from '../../shared/components/ui/Modal'
+import { Text } from '../../shared/components/ui/Text'
+import { formatDateTimeToBrazilian, maskCpf } from '../../shared/utils/formatters'
+import { getStepLabel } from '../../shared/utils/leadLabels'
+import { StatusBadge } from '../leads/components/StatusBadge'
+import styles from './CpfReuseModal.module.css'
 
 interface CpfReuseModalProps {
-  leadsFound: number
-  onContinue: () => void
+  isOpen: boolean
+  leads: LeadSummaryDto[]
+  onContinue: (leadId: string) => void
   onStartNew: () => void
   busy?: boolean
 }
 
-/** P2-1: shown when the CPF typed on etapa 1 already has an active lead. */
-export function CpfReuseModal({ leadsFound, onContinue, onStartNew, busy }: CpfReuseModalProps) {
+/** P2-1: shown when the CPF typed on etapa 1 already has one or more active leads. */
+export function CpfReuseModal({ isOpen, leads, onContinue, onStartNew, busy }: CpfReuseModalProps) {
+  const hasMultiple = leads.length > 1
+
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="cpf-reuse-title" style={overlayStyle}>
-      <div style={dialogStyle}>
-        <h3 id="cpf-reuse-title">Já existe um cadastro em andamento</h3>
-        <p>
-          {leadsFound === 1
-            ? 'Encontramos um cadastro em andamento para este CPF.'
-            : `Encontramos ${leadsFound} cadastros em andamento para este CPF.`}{' '}
-          Deseja continuar de onde parou ou começar um novo cadastro?
-        </p>
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-          <button type="button" onClick={onContinue} disabled={busy}>
-            Continuar de onde parei
-          </button>
-          <button type="button" onClick={onStartNew} disabled={busy}>
+    <Modal
+      isOpen={isOpen}
+      title="Já existe um cadastro em andamento"
+      footer={
+        hasMultiple ? (
+          <Button variant="secondary" onClick={onStartNew} disabled={busy}>
             Começar novo
-          </button>
-        </div>
+          </Button>
+        ) : undefined
+      }
+    >
+      <div className={styles.wrapper}>
+        <Text variant="body">
+          {hasMultiple
+            ? `Encontramos ${leads.length} cadastros em andamento para este CPF. Escolha qual deseja continuar:`
+            : 'Encontramos um cadastro em andamento para este CPF. Deseja continuar de onde parou ou começar um novo cadastro?'}
+        </Text>
+
+        {hasMultiple ? (
+          <ul className={styles.list}>
+            {leads.map((lead) => (
+              <li key={lead.id}>
+                <Card className={styles.leadCard}>
+                  <div className={styles.leadInfo}>
+                    <Text variant="subtitle" as="h3">
+                      {lead.cpf ? maskCpf(lead.cpf) : '—'}
+                    </Text>
+                    <StatusBadge status={lead.status} />
+                  </div>
+                  <div className={styles.leadMeta}>
+                    <Text variant="caption">Etapa: {getStepLabel(lead.progress.currentStep)}</Text>
+                    <Text variant="caption">Atualizado: {formatDateTimeToBrazilian(lead.updatedAt)}</Text>
+                  </div>
+                  <Button
+                    onClick={() => onContinue(lead.id)}
+                    loading={busy}
+                    disabled={busy}
+                    size="sm"
+                    className={styles.continueButton}
+                  >
+                    Continuar este cadastro
+                  </Button>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={styles.singleActions}>
+            <Button variant="secondary" onClick={onStartNew} disabled={busy}>
+              Começar novo
+            </Button>
+            <Button onClick={() => onContinue(leads[0]?.id)} loading={busy} disabled={busy}>
+              Continuar de onde parei
+            </Button>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   )
-}
-
-const overlayStyle: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(0,0,0,0.4)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 10,
-}
-
-const dialogStyle: CSSProperties = {
-  background: '#fff',
-  color: '#111',
-  padding: '1.5rem',
-  borderRadius: 8,
-  maxWidth: 420,
 }

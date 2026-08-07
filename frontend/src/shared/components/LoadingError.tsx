@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { Alert } from './ui/Alert'
+import { Button } from './ui/Button'
+import { Text } from './ui/Text'
 
 interface LoadingErrorProps {
   loading?: boolean
@@ -11,21 +14,33 @@ interface LoadingErrorProps {
 /** Reusable loading/error-state wrapper: renders the loading label while `loading`, the error
  * (with an optional retry button) while `error` is set, otherwise `children`. Callers branch on
  * two inputs (`loading`, `error`) instead of scattering ad hoc conditionals per step page. */
-export function LoadingError({ loading, error, loadingLabel = 'Carregando…', onRetry, children }: LoadingErrorProps) {
+export function LoadingError({
+  loading,
+  error,
+  loadingLabel = 'Carregando…',
+  onRetry,
+  children,
+}: LoadingErrorProps) {
   if (loading) {
-    return <p role="status">{loadingLabel}</p>
+    return (
+      <div role="status" aria-live="polite">
+        <Text variant="muted">{loadingLabel}</Text>
+      </div>
+    )
   }
 
   if (error) {
     return (
-      <div role="alert" style={{ color: '#b00020', border: '1px solid #b00020', borderRadius: 4, padding: '0.75rem' }}>
-        <p style={{ margin: 0 }}>{error}</p>
+      <Alert variant="error" title="Algo deu errado">
+        <Text variant="body">{error}</Text>
         {onRetry && (
-          <button type="button" onClick={onRetry} style={{ marginTop: '0.5rem' }}>
-            Tentar novamente
-          </button>
+          <div style={{ marginTop: '0.75rem' }}>
+            <Button variant="secondary" size="sm" onClick={onRetry}>
+              Tentar novamente
+            </Button>
+          </div>
         )}
-      </div>
+      </Alert>
     )
   }
 

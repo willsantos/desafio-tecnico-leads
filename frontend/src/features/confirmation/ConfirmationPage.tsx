@@ -1,10 +1,26 @@
 import { useEffect, useState } from 'react'
 import { ApiError, getErrorMessage, getPendingReasons } from '../../shared/api/httpClient'
+import { Alert } from '../../shared/components/ui/Alert'
+import { Button } from '../../shared/components/ui/Button'
+import { Card } from '../../shared/components/ui/Card'
+import { Text } from '../../shared/components/ui/Text'
 import { LoadingError } from '../../shared/components/LoadingError'
 import { useLead } from '../../shared/leadContext'
+import { formatDateToBrazilian, maskCpf, maskPhone } from '../../shared/utils/formatters'
 import { confirmLead, retrySubmission } from './confirmationApi'
+import styles from './ConfirmationPage.module.css'
 
 const RETRYABLE_STATUSES = new Set([503, 504])
+
+const TYPE_LABELS: Record<string, string> = {
+  personal_document: 'Documento pessoal',
+  payslip: 'Contracheque',
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (value == null) return ''
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+}
 
 export function ConfirmationPage() {
   const { lead, setLead, refreshLead } = useLead()
@@ -14,13 +30,15 @@ export function ConfirmationPage() {
   const [retryable, setRetryable] = useState(false)
 
   useEffect(() => {
-    // Etapa 6's summary needs `documents` (only populated by GET /leads/{id}, not by the
-    // create/update responses from earlier steps) — refresh once on entry.
     void refreshLead()
   }, [])
 
   if (!lead) {
-    return <p>Complete as etapas anteriores antes de confirmar o cadastro.</p>
+    return (
+      <Alert variant="warning" title="Etapa anterior não concluída">
+        Complete as etapas anteriores antes de confirmar o cadastro.
+      </Alert>
+    )
   }
 
   const activeLeadId = lead.id
@@ -74,98 +92,138 @@ export function ConfirmationPage() {
   }
 
   return (
-    <section>
-      <h2>Etapa 6 — Confirmação e efetivação do cadastro</h2>
+    <section className={styles.wrapper}>
+      <Text variant="title" as="h2" className={styles.heading}>
+        Confirmação e efetivação
+      </Text>
 
-      <h3>Resumo</h3>
+      <div className={styles.summaryGrid}>
+        <Card title="Consulta">
+          {lead.consultation?.result ? (
+            <div className={styles.summaryBody}>
+              <Text variant="body">
+                Resultado: <strong>{lead.consultation.result.outcome}</strong>
+              </Text>
+              {lead.consultation.result.availableMargin != null && (
+                <Text variant="body">
+                  Margem disponível: <strong>{formatCurrency(lead.consultation.result.availableMargin)}</strong>
+                </Text>
+              )}
+            </div>
+          ) : (
+            <Text variant="muted">Consulta não realizada.</Text>
+          )}
+        </Card>
 
-      <section>
-        <h4>Consulta</h4>
-        {lead.consultation?.result ? (
-          <p>
-            Resultado: {lead.consultation.result.outcome}
-            {lead.consultation.result.availableMargin != null &&
-              ` — margem disponível: R$ ${lead.consultation.result.availableMargin.toFixed(2)}`}
-          </p>
-        ) : (
-          <p>Consulta não realizada.</p>
-        )}
-      </section>
+        <Card title="Simulação selecionada" variant={selectedSimulation ? 'primary' : 'default'}>
+          {selectedSimulation ? (
+            <div className={styles.simulation}>
+              <Text variant="subtitle">{formatCurrency(selectedSimulation.requestedAmount)}</Text>
+              <Text variant="body">
+                {selectedSimulation.installments}x de {formatCurrency(selectedSimulation.installmentAmount)}
+              </Text>
+              <Text variant="caption">Total: {formatCurrency(selectedSimulation.totalAmount)}</Text>
+            </div>
+          ) : (
+            <Text variant="muted">Nenhuma simulação selecionada.</Text>
+          )}
+        </Card>
 
-      <section>
-        <h4>Simulação selecionada</h4>
-        {selectedSimulation ? (
-          <p>
-            R$ {selectedSimulation.requestedAmount.toFixed(2)} em {selectedSimulation.installments}x de R${' '}
-            {selectedSimulation.installmentAmount.toFixed(2)} (total R$ {selectedSimulation.totalAmount.toFixed(2)})
-          </p>
-        ) : (
-          <p>Nenhuma simulação selecionada.</p>
-        )}
-      </section>
+        <Card title="Identificação">
+          {lead.identification ? (
+            <div className={styles.summaryBody}>
+              <Text variant="body">
+                <strong>{lead.identification.fullName}</strong>
+              </Text>
+              <Text variant="body">
+                CPF: <strong>{maskCpf(lead.identification.cpf)}</strong>
+              </Text>
+              <Text variant="body">
+                Nascimento: <strong>{formatDateToBrazilian(lead.identification.birthDate)}</strong>
+              </Text>
+              <Text variant="body">
+                Telefone: <strong>{maskPhone(lead.identification.phone)}</strong>
+              </Text>
+              <Text variant="body">
+                {lead.identification.documentType} {lead.identification.documentNumber}
+              </Text>
+              <Text variant="caption">
+                Emissão: {formatDateToBrazilian(lead.identification.issueDate)}
+              </Text>
+              <Text variant="caption">
+                Consulta: {lead.identification.query?.outcome ?? 'não realizada'}
+              </Text>
+            </div>
+          ) : (
+            <Text variant="muted">Identificação não preenchida.</Text>
+          )}
+        </Card>
 
-      <section>
-        <h4>Identificação</h4>
-        {lead.identification ? (
-          <p>
-            {lead.identification.fullName} — {lead.identification.documentType} {lead.identification.documentNumber} — consulta:{' '}
-            {lead.identification.query?.outcome ?? 'não realizada'}
-          </p>
-        ) : (
-          <p>Identificação não preenchida.</p>
-        )}
-      </section>
+        <Card title="Dados profissionais e bancários">
+          {lead.professionalData && lead.bankingData ? (
+            <div className={styles.summaryBody}>
+              <Text variant="body">
+                <strong>{lead.professionalData.company}</strong> — {lead.professionalData.role}
+              </Text>
+              <Text variant="caption">
+                Admissão: {formatDateToBrazilian(lead.professionalData.admissionDate)}
+              </Text>
+              <Text variant="caption">
+                Banco {lead.bankingData.bank}, ag. {lead.bankingData.agency}, conta {lead.bankingData.account}-
+                {lead.bankingData.accountDigit}
+              </Text>
+            </div>
+          ) : (
+            <Text variant="muted">Dados profissionais/bancários não preenchidos.</Text>
+          )}
+        </Card>
 
-      <section>
-        <h4>Dados profissionais e bancários</h4>
-        {lead.professionalData && lead.bankingData ? (
-          <p>
-            {lead.professionalData.company} — {lead.professionalData.role} | Banco {lead.bankingData.bank}, ag.{' '}
-            {lead.bankingData.agency}, conta {lead.bankingData.account}-{lead.bankingData.accountDigit}
-          </p>
-        ) : (
-          <p>Dados profissionais/bancários não preenchidos.</p>
-        )}
-      </section>
+        <Card title="Documentos" className={styles.span2}>
+          {lead.documents && lead.documents.length > 0 ? (
+            <ul className={styles.documentList}>
+              {lead.documents.map((doc) => (
+                <li key={doc.id} className={styles.documentItem}>
+                  <Text variant="body">
+                    {TYPE_LABELS[doc.type] ?? doc.type} {doc.personalDocumentSubtype && `(${doc.personalDocumentSubtype})`}
+                  </Text>
+                  <Text variant="caption">{doc.status}</Text>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Text variant="muted">Nenhum documento enviado.</Text>
+          )}
+        </Card>
+      </div>
 
-      <section>
-        <h4>Documentos</h4>
-        {lead.documents && lead.documents.length > 0 ? (
-          <ul>
-            {lead.documents.map((doc) => (
-              <li key={doc.id}>
-                {doc.type} {doc.personalDocumentSubtype && `(${doc.personalDocumentSubtype})`} — {doc.status}
+      {registrationId ? (
+        <Alert variant="success" title="Cadastro efetivado com sucesso!">
+          <Text variant="body">
+            Número de registro: <strong>{registrationId}</strong>
+          </Text>
+        </Alert>
+      ) : (
+        <div className={styles.actions}>
+          <Button type="button" onClick={handleConfirm} loading={submitting} disabled={submitting} size="lg">
+            Confirmar cadastro
+          </Button>
+        </div>
+      )}
+
+      {pendingReasons && (
+        <Alert variant="error" title="Não foi possível confirmar. Pendências:">
+          <ul className={styles.reasonsList}>
+            {pendingReasons.map((reason) => (
+              <li key={reason}>
+                <Text variant="body">{reason}</Text>
               </li>
             ))}
           </ul>
-        ) : (
-          <p>Nenhum documento enviado.</p>
-        )}
-      </section>
+        </Alert>
+      )}
 
-      {registrationId ? (
-        <p>
-          Cadastro efetivado com sucesso! Número de registro: <strong>{registrationId}</strong>
-        </p>
-      ) : (
-        <>
-          <button type="button" onClick={handleConfirm} disabled={submitting}>
-            Confirmar cadastro
-          </button>
-
-          {pendingReasons && (
-            <div role="alert">
-              <p>Não foi possível confirmar. Pendências:</p>
-              <ul>
-                {pendingReasons.map((reason) => (
-                  <li key={reason}>{reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {!pendingReasons && <LoadingError error={error} onRetry={retryable ? handleRetry : undefined} />}
-        </>
+      {!pendingReasons && !registrationId && (
+        <LoadingError error={error} onRetry={retryable ? handleRetry : undefined} />
       )}
     </section>
   )
