@@ -15,14 +15,17 @@ export const STEP_IDS = [
 export type StepId = (typeof STEP_IDS)[number]
 
 // `progress.currentStep` only ever holds one of these 4 values (backend never advances it past
-// "professional-banking-data" — documents/confirmation have no step-tracking field of their own).
-// Exported so App.tsx's `deriveCompletedStepIds` can reuse the same mapping instead of
-// re-deriving it as a second, independently-drifting copy.
+// "professional-banking-data"). `progress.resumeStep` (server-derived, spec progress-resume-step)
+// can additionally be "documents" or "confirmation". Exported so App.tsx's
+// `deriveCompletedStepIds` can reuse the same mapping instead of re-deriving it as a second,
+// independently-drifting copy.
 export const CURRENT_STEP_TO_STEP_ID: Record<string, StepId> = {
   consultation: 'consultation',
   simulation: 'simulation',
   identification: 'identification',
   'professional-banking-data': 'professionalBankingData',
+  documents: 'documents',
+  confirmation: 'confirmation',
 }
 
 // A lead in any of these statuses has already reached (or passed) etapa 6 at least once, so
@@ -35,12 +38,31 @@ const CONFIRMATION_REACHED_STATUSES = new Set([
   'completed',
 ])
 
-/** Maps a lead's server-tracked progress to the frontend's local step cursor (used on resume). */
+/** Maps a lead's server-tracked progress to the frontend's local step cursor (used on resume).
+ *
+ * Preferred source: `progress.resumeStep`, a server-derived field that names the next actionable
+ * step (spec PRS-09). Falls back to a local derivation from `completedSteps` for older API
+ * responses that predate the field (PRS-10): the backend treats `currentStep` as "last completed
+ * step", so we walk the tracked steps and return the first not in `completedSteps`, landing on
+ * `documents` once all four backend steps are done. */
 export function resolveStepId(lead: LeadDto): StepId {
+  if (lead.progress.resumeStep && CURRENT_STEP_TO_STEP_ID[lead.progress.resumeStep]) {
+    return CURRENT_STEP_TO_STEP_ID[lead.progress.resumeStep]
+  }
+
   if (CONFIRMATION_REACHED_STATUSES.has(lead.status)) {
     return 'confirmation'
   }
-  return CURRENT_STEP_TO_STEP_ID[lead.progress.currentStep] ?? 'consultation'
+  const completed = new Set(lead.progress.completedSteps ?? [])
+  for (const [backendStep, stepId] of Object.entries(CURRENT_STEP_TO_STEP_ID)) {
+    if (backendStep === 'documents' || backendStep === 'confirmation') {
+      continue
+    }
+    if (!completed.has(backendStep)) {
+      return stepId
+    }
+  }
+  return 'documents'
 }
 
 interface LeadContextValue {
@@ -62,12 +84,59 @@ interface LeadContextValue {
 
 const LeadContext = createContext<LeadContextValue | undefined>(undefined)
 
+// sessionStorage keeps the in-progress lead/step across F5 in the same tab, but is cleared when
+// the tab closes — so a brand-new proposal (new tab, or the "Nova proposta" button via resetLead)
+// always starts clean. Middle ground between "persists too aggressively" and "F5 wipes everything".
+const LEAD_STORAGE_KEY = 'consignado-leads:lead'
+const STEP_STORAGE_KEY = 'consignado-leads:step'
+
+function readStoredLead(): LeadDto | null {
+  try {
+    const raw = sessionStorage.getItem(LEAD_STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as LeadDto) : null
+  } catch {
+    return null
+  }
+}
+
+function readStoredStep(): StepId {
+  try {
+    const raw = sessionStorage.getItem(STEP_STORAGE_KEY)
+    return raw && STEP_IDS.includes(raw as StepId) ? (raw as StepId) : 'consultation'
+  } catch {
+    return 'consultation'
+  }
+}
+
+function writeStoredLead(lead: LeadDto | null): void {
+  try {
+    if (lead) sessionStorage.setItem(LEAD_STORAGE_KEY, JSON.stringify(lead))
+    else sessionStorage.removeItem(LEAD_STORAGE_KEY)
+  } catch {
+    // ignore quota / privacy mode errors
+  }
+}
+
+function writeStoredStep(step: StepId): void {
+  try {
+    sessionStorage.setItem(STEP_STORAGE_KEY, step)
+  } catch {
+    // ignore
+  }
+}
+
 export function LeadProvider({ children }: { children: ReactNode }) {
-  const [lead, setLeadState] = useState<LeadDto | null>(null)
-  const [step, setStep] = useState<StepId>('consultation')
+  const [lead, setLeadState] = useState<LeadDto | null>(readStoredLead)
+  const [step, setStepState] = useState<StepId>(readStoredStep)
 
   const setLead = useCallback((next: LeadDto) => {
     setLeadState(next)
+    writeStoredLead(next)
+  }, [])
+
+  const setStep = useCallback((next: StepId) => {
+    setStepState(next)
+    writeStoredStep(next)
   }, [])
 
   const refreshLead = useCallback(async () => {
@@ -76,12 +145,15 @@ export function LeadProvider({ children }: { children: ReactNode }) {
     }
     const fresh = await httpClient.get<LeadDto>(`/leads/${lead.id}`)
     setLeadState(fresh)
+    writeStoredLead(fresh)
     return fresh
   }, [lead])
 
   const resetLead = useCallback(() => {
     setLeadState(null)
-    setStep('consultation')
+    setStepState('consultation')
+    writeStoredLead(null)
+    writeStoredStep('consultation')
   }, [])
 
   const value = useMemo<LeadContextValue>(
@@ -95,7 +167,7 @@ export function LeadProvider({ children }: { children: ReactNode }) {
       refreshLead,
       resetLead,
     }),
-    [lead, step, setLead, refreshLead, resetLead],
+    [lead, step, setLead, setStep, refreshLead, resetLead],
   )
 
   return <LeadContext.Provider value={value}>{children}</LeadContext.Provider>

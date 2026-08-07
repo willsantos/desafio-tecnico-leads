@@ -9,6 +9,9 @@ export interface ProgressDto {
   completedSteps: string[]
   pendingItems: string[]
   lastUpdatedAt: string
+  /** Server-derived next actionable step (spec progress-resume-step PRS-01..08). Optional only
+   *  for backward compatibility with older API responses; when present, the frontend uses it. */
+  resumeStep?: string
 }
 
 export interface ConsultationInputDto {
