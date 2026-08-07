@@ -23,12 +23,13 @@ export function CpfReuseModal({ isOpen, leads, onContinue, onStartNew, busy }: C
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {}}
       title="Já existe um cadastro em andamento"
       footer={
-        <Button variant="secondary" onClick={onStartNew} disabled={busy}>
-          Começar novo
-        </Button>
+        hasMultiple ? (
+          <Button variant="secondary" onClick={onStartNew} disabled={busy}>
+            Começar novo
+          </Button>
+        ) : undefined
       }
     >
       <div className={styles.wrapper}>
