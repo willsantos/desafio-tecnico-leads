@@ -45,7 +45,7 @@ export function CpfReuseModal({ isOpen, leads, onContinue, onStartNew, busy }: C
                 <Card className={styles.leadCard}>
                   <div className={styles.leadInfo}>
                     <Text variant="subtitle" as="h3">
-                      {maskCpf(lead.cpf)}
+                      {lead.cpf ? maskCpf(lead.cpf) : '—'}
                     </Text>
                     <StatusBadge status={lead.status} />
                   </div>

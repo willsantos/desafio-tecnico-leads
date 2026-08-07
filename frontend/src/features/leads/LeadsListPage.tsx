@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import type { LeadSummaryDto, PagedLeadsResponse } from '../../shared/api/types'
@@ -55,6 +55,9 @@ export function LeadsListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resumingId, setResumingId] = useState<string | null>(null)
+  // Monotonic request id so a slow in-flight list fetch can't overwrite the result of a newer one
+  // when filters change quickly (cubic P2: stale responses leaking into the visible list).
+  const listReqIdRef = useRef(0)
 
   const handleNewProposal = useCallback(() => {
     resetLead()
@@ -79,6 +82,7 @@ export function LeadsListPage() {
   )
 
   const fetchLeads = useCallback(async () => {
+    const reqId = ++listReqIdRef.current
     setLoading(true)
     setError(null)
     try {
@@ -91,16 +95,25 @@ export function LeadsListPage() {
         page,
         PAGE_SIZE,
       )
+      // Drop stale results: a newer request (filter/page change) supersedes this one.
+      if (reqId !== listReqIdRef.current) return
       setResponse(result)
     } catch (err) {
+      if (reqId !== listReqIdRef.current) return
       setError(getErrorMessage(err))
     } finally {
-      setLoading(false)
+      if (reqId === listReqIdRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page])
 
+  // Debounce filter/page changes so typing into the CPF box doesn't fire one request per keystroke.
   useEffect(() => {
-    void fetchLeads()
+    const timer = setTimeout(() => {
+      void fetchLeads()
+    }, 300)
+    return () => clearTimeout(timer)
   }, [fetchLeads])
 
   function updateFilter<K extends keyof LeadsFilters>(key: K, value: LeadsFilters[K]) {
@@ -181,6 +194,7 @@ export function LeadsListPage() {
                   lead={lead}
                   onResume={handleResume}
                   busy={resumingId === lead.id}
+                  disableAll={resumingId !== null}
                 />
               ))}
             </div>
@@ -200,13 +214,14 @@ export function LeadsListPage() {
                 </thead>
                 <tbody>
                   {leads.map((lead) => (
-                    <LeadListItem
-                      key={lead.id}
-                      lead={lead}
-                      row
-                      onResume={handleResume}
-                      busy={resumingId === lead.id}
-                    />
+                  <LeadListItem
+                    key={lead.id}
+                    lead={lead}
+                    row
+                    onResume={handleResume}
+                    busy={resumingId === lead.id}
+                    disableAll={resumingId !== null}
+                  />
                   ))}
                 </tbody>
               </table>
@@ -247,12 +262,15 @@ interface LeadListItemProps {
   row?: boolean
   onResume: (leadId: string) => void
   busy: boolean
+  /** When true, all Continue buttons are disabled because a resume is in flight on another row
+   *  (cubic P2: prevents out-of-order resume responses overwriting the wizard context). */
+  disableAll?: boolean
 }
 
-function LeadListItem({ lead, row, onResume, busy }: LeadListItemProps) {
+function LeadListItem({ lead, row, onResume, busy, disableAll }: LeadListItemProps) {
   if (row) {
-    return <LeadSummaryRow lead={lead} onResume={onResume} busy={busy} />
+    return <LeadSummaryRow lead={lead} onResume={onResume} busy={busy} disableAll={disableAll} />
   }
 
-  return <LeadSummaryCard lead={lead} onResume={onResume} busy={busy} />
+  return <LeadSummaryCard lead={lead} onResume={onResume} busy={busy} disableAll={disableAll} />
 }

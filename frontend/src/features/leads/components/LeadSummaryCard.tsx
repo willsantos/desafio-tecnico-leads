@@ -11,14 +11,15 @@ interface LeadSummaryCardProps {
   lead: LeadSummaryDto
   onResume: (leadId: string) => void | Promise<void>
   busy?: boolean
+  disableAll?: boolean
 }
 
-export function LeadSummaryCard({ lead, onResume, busy }: LeadSummaryCardProps) {
+export function LeadSummaryCard({ lead, onResume, busy, disableAll }: LeadSummaryCardProps) {
   return (
     <Card className={styles.card}>
       <div className={styles.header}>
         <Text variant="subtitle" as="h3" className={styles.cpf}>
-          {maskCpf(lead.cpf)}
+          {lead.cpf ? maskCpf(lead.cpf) : '—'}
         </Text>
         <StatusBadge status={lead.status} />
       </div>
@@ -26,7 +27,7 @@ export function LeadSummaryCard({ lead, onResume, busy }: LeadSummaryCardProps) 
       <dl className={styles.details}>
         <div className={styles.detail}>
           <Text variant="caption" as="dt">
-            Etapa atual
+            Última etapa concluída
           </Text>
           <Text variant="body" as="dd">
             {getStepLabel(lead.progress.currentStep)}
@@ -61,7 +62,7 @@ export function LeadSummaryCard({ lead, onResume, busy }: LeadSummaryCardProps) 
       </dl>
 
       <div className={styles.actions}>
-        <Button onClick={() => onResume(lead.id)} loading={busy} disabled={busy} size="sm">
+        <Button onClick={() => onResume(lead.id)} loading={busy} disabled={busy || disableAll} size="sm">
           Continuar
         </Button>
       </div>
