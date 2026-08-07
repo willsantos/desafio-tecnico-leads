@@ -96,6 +96,7 @@ export function IdentificationPage() {
         lead?.version,
       )
       setLead(dto)
+      setStep('professionalBankingData')
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -195,7 +196,7 @@ export function IdentificationPage() {
 
         <div className={styles.actions}>
           <Button type="submit" loading={submitting} disabled={submitting}>
-            {lead.identification ? 'Corrigir e reconsultar' : 'Enviar identificação'}
+            {lead.identification ? 'Atualizar e avançar' : 'Salvar e avançar'}
           </Button>
         </div>
       </form>
@@ -207,12 +208,6 @@ export function IdentificationPage() {
           {OUTCOME_LABELS[outcome] ?? outcome}
         </Alert>
       )}
-
-      <div className={styles.actions}>
-        <Button variant="primary" onClick={() => setStep('professionalBankingData')} disabled={!lead.identification || submitting}>
-          Avançar para dados profissionais
-        </Button>
-      </div>
     </section>
   )
 }

@@ -95,6 +95,7 @@ export function ProfessionalBankingDataPage() {
         expectedVersion,
       })
       setLead(dto)
+      setStep('documents')
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -160,18 +161,12 @@ export function ProfessionalBankingDataPage() {
 
         <div className={styles.actions}>
           <Button type="submit" loading={submitting} disabled={submitting}>
-            {lead.professionalData ? 'Atualizar dados' : 'Salvar dados'}
+            {lead.professionalData ? 'Atualizar e avançar' : 'Salvar e avançar'}
           </Button>
         </div>
       </form>
 
       <LoadingError error={error} />
-
-      <div className={styles.actions}>
-        <Button variant="primary" onClick={() => setStep('documents')} disabled={!lead.professionalData || submitting}>
-          Avançar para anexos
-        </Button>
-      </div>
     </section>
   )
 }
