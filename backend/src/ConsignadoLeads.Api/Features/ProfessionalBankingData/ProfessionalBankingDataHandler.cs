@@ -46,6 +46,10 @@ public class ProfessionalBankingDataHandler(MongoContext mongo)
             .Inc(l => l.Version, 1);
 
         var updated = await mongo.UpdateWithVersionCheckAsync(id, request.ExpectedVersion, update);
-        return LeadMapper.ToDto(updated);
+
+        // Load active documents so LeadMapper can derive progress.resumeStep precisely for the
+        // one branch (documents-vs-confirmation) that depends on them (spec PRS-04/PRS-05).
+        var activeDocuments = await mongo.GetActiveDocumentsAsync(id);
+        return LeadMapper.ToDto(updated, activeDocuments.Select(DocumentMapper.ToDto).ToList());
     }
 }

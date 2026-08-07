@@ -29,7 +29,8 @@ public record ProgressDto(
     IReadOnlyList<string> StartedSteps,
     IReadOnlyList<string> CompletedSteps,
     IReadOnlyList<string> PendingItems,
-    DateTime LastUpdatedAt);
+    DateTime LastUpdatedAt,
+    string ResumeStep);
 
 public record ConsultationDto(ConsultationInputDto Input, ConsultationResultDto? Result);
 
@@ -83,7 +84,7 @@ public static class LeadMapper
         lead.Id,
         lead.Status,
         lead.Version,
-        new ProgressDto(lead.Progress.CurrentStep, lead.Progress.StartedSteps, lead.Progress.CompletedSteps, lead.Progress.PendingItems, lead.Progress.LastUpdatedAt),
+        MapProgress(lead.Status, lead.Progress, documents),
         MapConsultation(lead.Consultation),
         lead.Simulations.Select(MapSimulation).ToList(),
         MapIdentification(lead.Identification),
@@ -93,6 +94,24 @@ public static class LeadMapper
         lead.CreatedAt,
         lead.UpdatedAt,
         documents);
+
+    private static ProgressDto MapProgress(string status, Progress progress, IReadOnlyList<DocumentDto>? documents)
+    {
+        var activeDocTypes = documents?
+            .Where(d => d.Status == "uploaded")
+            .Select(d => d.Type)
+            .ToList();
+
+        var resumeStep = ResumeStepResolver.Resolve(status, progress.CompletedSteps, activeDocTypes);
+
+        return new ProgressDto(
+            progress.CurrentStep,
+            progress.StartedSteps,
+            progress.CompletedSteps,
+            progress.PendingItems,
+            progress.LastUpdatedAt,
+            resumeStep);
+    }
 
     private static ConsultationDto? MapConsultation(Consultation? consultation)
     {
