@@ -96,20 +96,26 @@ export function DocumentsPage() {
             <Text variant="subtitle" as="h3">
               Documentos enviados
             </Text>
-            {documents.map((doc) => (
-              <Card key={doc.id} className={styles.documentCard}>
-                <div className={styles.documentInfo}>
-                  <Text variant="body">
-                    {TYPE_LABELS[doc.type] ?? doc.type}
-                    {doc.personalDocumentSubtype && ` (${doc.personalDocumentSubtype})`}
-                  </Text>
-                  <Text variant="caption">{doc.status}</Text>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
-                  Remover
-                </Button>
-              </Card>
-            ))}
+            <ul className={styles.documentList}>
+              {documents.map((doc) => (
+                <li key={doc.id}>
+                  <Card>
+                    <div className={styles.documentCard}>
+                      <div className={styles.documentInfo}>
+                        <Text variant="body">
+                          {TYPE_LABELS[doc.type] ?? doc.type}
+                          {doc.personalDocumentSubtype && ` (${doc.personalDocumentSubtype})`}
+                        </Text>
+                        <Text variant="caption">{doc.status}</Text>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
+                        Remover
+                      </Button>
+                    </div>
+                  </Card>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </LoadingError>

@@ -21,7 +21,6 @@ export function Button({
     styles.button,
     styles[variant],
     styles[size],
-    loading ? styles.loading : '',
     className,
   ]
     .filter(Boolean)

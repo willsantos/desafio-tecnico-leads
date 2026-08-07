@@ -12,6 +12,8 @@ interface FileUploadProps {
   onFileSelect: (file: File | null) => void
   error?: string
   disabled?: boolean
+  /** When true, shows an "Enviando…" status on the file card (auto-upload in progress). */
+  loading?: boolean
 }
 
 function formatBytes(bytes: number): string {
@@ -47,9 +49,11 @@ export function FileUpload({
   onFileSelect,
   error,
   disabled,
+  loading,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [rejectedFile, setRejectedFile] = useState<string | null>(null)
 
   function handleClick() {
     inputRef.current?.click()
@@ -64,6 +68,7 @@ export function FileUpload({
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
+    setRejectedFile(null)
     onFileSelect(file)
   }
 
@@ -81,12 +86,17 @@ export function FileUpload({
     event.preventDefault()
     setIsDragging(false)
     const file = event.dataTransfer.files?.[0] ?? null
-    if (file && (!accept || fileMatchesAccept(file, accept))) {
-      onFileSelect(file)
+    if (!file) return
+    if (accept && !fileMatchesAccept(file, accept)) {
+      setRejectedFile(file.name)
+      return
     }
+    setRejectedFile(null)
+    onFileSelect(file)
   }
 
   function handleRemove() {
+    setRejectedFile(null)
     onFileSelect(null)
     if (inputRef.current) {
       inputRef.current.value = ''
@@ -135,17 +145,25 @@ export function FileUpload({
           </Text>
         </div>
       ) : (
-        <div className={styles.fileCard}>
+        <div className={styles.fileCard} aria-busy={loading || undefined}>
           <div className={styles.fileInfo}>
             <Text variant="body" as="span" className={styles.fileName}>
               {selectedFile.name}
             </Text>
-            <Text variant="caption">{formatBytes(selectedFile.size)}</Text>
+            <Text variant="caption">
+              {loading ? 'Enviando…' : formatBytes(selectedFile.size)}
+            </Text>
           </div>
           <Button variant="ghost" size="sm" onClick={handleRemove} disabled={disabled}>
             Remover
           </Button>
         </div>
+      )}
+
+      {rejectedFile && (
+        <Text variant="caption" as="span" className={styles.error} aria-live="polite">
+          {rejectedFile}: tipo de arquivo não suportado.
+        </Text>
       )}
 
       {error && (

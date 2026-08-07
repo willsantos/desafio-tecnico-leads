@@ -46,6 +46,7 @@ export function PayslipUploadCard({ leadId, onUploaded }: PayslipUploadCardProps
         selectedFile={file}
         onFileSelect={handleFileSelect}
         disabled={submitting}
+        loading={submitting}
       />
       {error && (
         <Alert variant="error" title="Erro no envio">

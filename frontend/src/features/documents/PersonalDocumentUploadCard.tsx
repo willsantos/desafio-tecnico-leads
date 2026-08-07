@@ -60,6 +60,7 @@ export function PersonalDocumentUploadCard({ leadId, defaultSubtype, onUploaded 
         selectedFile={file}
         onFileSelect={handleFileSelect}
         disabled={submitting}
+        loading={submitting}
       />
       {error && (
         <Alert variant="error" title="Erro no envio">

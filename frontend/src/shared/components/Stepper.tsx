@@ -18,6 +18,15 @@ interface StepperProps {
 export function Stepper({ steps, currentStepId, completedStepIds, onStepClick }: StepperProps) {
   const currentIndex = steps.findIndex((s) => s.id === currentStepId)
   const stepNumber = currentIndex >= 0 ? currentIndex + 1 : 1
+  // Nearest completed step before the current one — lets mobile users walk back to fix earlier
+  // data even though the compact layout hides the full interactive StepIndicator (cubic P2).
+  const previousCompletedStepId = onStepClick
+    ? steps
+        .slice(0, currentIndex)
+        .filter((s) => completedStepIds.has(s.id))
+        .map((s) => s.id)
+        .pop()
+    : undefined
 
   return (
     <div className={styles.wrapper}>
@@ -28,6 +37,11 @@ export function Stepper({ steps, currentStepId, completedStepIds, onStepClick }:
         <Text variant="subtitle" as="p">
           {steps[currentIndex]?.label ?? ''}
         </Text>
+        {previousCompletedStepId && onStepClick && (
+          <button type="button" className={styles.backLink} onClick={() => onStepClick(previousCompletedStepId)}>
+            ← Etapa anterior
+          </button>
+        )}
       </div>
       <div className={styles.desktop}>
         <StepIndicator
