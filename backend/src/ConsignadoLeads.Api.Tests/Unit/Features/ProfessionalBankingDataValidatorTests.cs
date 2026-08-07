@@ -67,6 +67,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingEmploymentType_AddsError(string? value)
     {
         var request = ValidRequest() with { ProfessionalData = ValidProfessional() with { EmploymentType = value! } };
@@ -76,6 +77,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingCompany_AddsError(string? value)
     {
         var request = ValidRequest() with { ProfessionalData = ValidProfessional() with { Company = value! } };
@@ -85,6 +87,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingRegistrationNumber_AddsError(string? value)
     {
         var request = ValidRequest() with { ProfessionalData = ValidProfessional() with { RegistrationNumber = value! } };
@@ -94,6 +97,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingRole_AddsError(string? value)
     {
         var request = ValidRequest() with { ProfessionalData = ValidProfessional() with { Role = value! } };
@@ -113,6 +117,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAdmissionDate_AddsError(string? value)
     {
         var request = ValidRequest() with { ProfessionalData = ValidProfessional() with { AdmissionDate = value! } };
@@ -122,6 +127,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingBank_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { Bank = value! } };
@@ -131,6 +137,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAgency_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { Agency = value! } };
@@ -140,6 +147,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAccount_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { Account = value! } };
@@ -149,6 +157,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAccountDigit_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { AccountDigit = value! } };
@@ -158,6 +167,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAccountType_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { AccountType = value! } };
@@ -167,6 +177,7 @@ public class ProfessionalBankingDataValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingAccountHolder_AddsError(string? value)
     {
         var request = ValidRequest() with { BankingData = ValidBanking() with { AccountHolder = value! } };

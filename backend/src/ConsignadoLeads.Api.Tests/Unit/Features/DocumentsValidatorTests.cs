@@ -109,8 +109,9 @@ public class DocumentsValidatorTests
     [Fact]
     public void Validate_PayslipIgnoresSubtype()
     {
-        // subtype is only required for personal_document; payslip must not flag it.
-        Assert.Empty(DocumentsValidator.Validate(MakeFile(), "payslip", null));
+        // subtype is only required for personal_document; a payslip with a stray subtype value
+        // must still validate (distinct from the null-subtype happy path).
+        Assert.Empty(DocumentsValidator.Validate(MakeFile(), "payslip", "CNH"));
     }
 
     [Fact]

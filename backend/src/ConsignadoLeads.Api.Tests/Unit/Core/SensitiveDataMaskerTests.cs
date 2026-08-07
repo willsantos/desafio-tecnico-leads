@@ -81,8 +81,9 @@ public class SensitiveDataMaskerTests
     [Fact]
     public void Mask_WhenSensitiveFieldDifferentCase_StillRedacts()
     {
-        // camelCase JSON (the API's actual wire format) must match case-insensitively.
-        var json = "{\"cpf\":\"99999999999\",\"fullName\":\"Ana\"}";
+        // A genuinely different case ("CPF" vs the stored "cpf") must still match — pinning the
+        // OrdinalIgnoreCase comparison so a regression to case-sensitive matching is caught.
+        var json = "{\"CPF\":\"99999999999\",\"fullName\":\"Ana\"}";
         var node = System.Text.Json.JsonSerializer.SerializeToNode(System.Text.Json.JsonSerializer.Deserialize<object>(json));
 
         var masked = SensitiveDataMasker.Mask(node);

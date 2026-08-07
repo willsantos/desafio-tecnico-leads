@@ -45,6 +45,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingFullName_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { FullName = value! });
@@ -54,6 +55,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingCpf_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { Cpf = value! });
@@ -63,6 +65,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingBirthDate_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { BirthDate = value! });
@@ -72,6 +75,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingEmail_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { Email = value! });
@@ -81,6 +85,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingPhone_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { Phone = value! });
@@ -90,6 +95,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingMotherName_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { MotherName = value! });
@@ -99,6 +105,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingMaritalStatus_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { MaritalStatus = value! });
@@ -127,6 +134,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingDocumentNumber_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { DocumentNumber = value! });
@@ -136,6 +144,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingIssuingAuthority_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { IssuingAuthority = value! });
@@ -145,6 +154,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingIssuingState_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { IssuingState = value! });
@@ -154,6 +164,7 @@ public class IdentificationValidatorTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Validate_MissingIssueDate_AddsError(string? value)
     {
         var errors = IdentificationValidator.Validate(ValidRequest() with { IssueDate = value! });
