@@ -1,7 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import { Alert } from '../../shared/components/ui/Alert'
-import { Button } from '../../shared/components/ui/Button'
 import { Card } from '../../shared/components/ui/Card'
 import { FileUpload } from '../../shared/components/ui/FileUpload'
 import { uploadDocument } from './documentsApi'
@@ -17,20 +16,21 @@ export function PayslipUploadCard({ leadId, onUploaded }: PayslipUploadCardProps
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!file) {
-      setError('Selecione um arquivo.')
+  async function handleFileSelect(selected: File | null) {
+    setFile(selected)
+    if (!selected) {
+      setError(null)
       return
     }
-    setSubmitting(true)
     setError(null)
+    setSubmitting(true)
     try {
-      await uploadDocument(leadId, file, 'payslip')
+      await uploadDocument(leadId, selected, 'payslip')
       setFile(null)
       onUploaded()
     } catch (err) {
       setError(getErrorMessage(err))
+      setFile(null)
     } finally {
       setSubmitting(false)
     }
@@ -38,27 +38,20 @@ export function PayslipUploadCard({ leadId, onUploaded }: PayslipUploadCardProps
 
   return (
     <Card title="Contracheque" className={styles.card}>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <FileUpload
-          id="payslip"
-          label="Arquivo"
-          description="JPEG, PNG ou PDF, até 10MB"
-          accept="image/jpeg,image/png,application/pdf"
-          selectedFile={file}
-          onFileSelect={setFile}
-          disabled={submitting}
-        />
-        {error && (
-          <Alert variant="error" title="Erro no envio">
-            {error}
-          </Alert>
-        )}
-        <div className={styles.actions}>
-          <Button type="submit" loading={submitting} disabled={!file || submitting}>
-            Enviar contracheque
-          </Button>
-        </div>
-      </form>
+      <FileUpload
+        id="payslip"
+        label="Arquivo"
+        description="Selecione o arquivo para enviar automaticamente. JPEG, PNG ou PDF, até 10MB."
+        accept="image/jpeg,image/png,application/pdf"
+        selectedFile={file}
+        onFileSelect={handleFileSelect}
+        disabled={submitting}
+      />
+      {error && (
+        <Alert variant="error" title="Erro no envio">
+          {error}
+        </Alert>
+      )}
     </Card>
   )
 }

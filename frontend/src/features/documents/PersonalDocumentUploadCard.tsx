@@ -1,7 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { getErrorMessage } from '../../shared/api/httpClient'
 import { Alert } from '../../shared/components/ui/Alert'
-import { Button } from '../../shared/components/ui/Button'
 import { Card } from '../../shared/components/ui/Card'
 import { FileUpload } from '../../shared/components/ui/FileUpload'
 import { Select } from '../../shared/components/ui/Select'
@@ -22,20 +21,21 @@ export function PersonalDocumentUploadCard({ leadId, defaultSubtype, onUploaded 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!file) {
-      setError('Selecione um arquivo.')
+  async function handleFileSelect(selected: File | null) {
+    setFile(selected)
+    if (!selected) {
+      setError(null)
       return
     }
-    setSubmitting(true)
     setError(null)
+    setSubmitting(true)
     try {
-      await uploadDocument(leadId, file, 'personal_document', subtype)
+      await uploadDocument(leadId, selected, 'personal_document', subtype)
       setFile(null)
       onUploaded()
     } catch (err) {
       setError(getErrorMessage(err))
+      setFile(null)
     } finally {
       setSubmitting(false)
     }
@@ -43,35 +43,29 @@ export function PersonalDocumentUploadCard({ leadId, defaultSubtype, onUploaded 
 
   return (
     <Card title="Documento pessoal" className={styles.card}>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <Select
-          label="Tipo de documento"
-          name="personalDocumentSubtype"
-          value={subtype}
-          onChange={(e) => setSubtype(e.target.value)}
-          options={PERSONAL_DOCUMENT_SUBTYPES.map((type) => ({ value: type, label: type }))}
-          required
-        />
-        <FileUpload
-          id="personal-document"
-          label="Arquivo"
-          description="JPEG, PNG ou PDF, até 10MB"
-          accept="image/jpeg,image/png,application/pdf"
-          selectedFile={file}
-          onFileSelect={setFile}
-          disabled={submitting}
-        />
-        {error && (
-          <Alert variant="error" title="Erro no envio">
-            {error}
-          </Alert>
-        )}
-        <div className={styles.actions}>
-          <Button type="submit" loading={submitting} disabled={!file || submitting}>
-            Enviar documento pessoal
-          </Button>
-        </div>
-      </form>
+      <Select
+        label="Tipo de documento"
+        name="personalDocumentSubtype"
+        value={subtype}
+        onChange={(e) => setSubtype(e.target.value)}
+        options={PERSONAL_DOCUMENT_SUBTYPES.map((type) => ({ value: type, label: type }))}
+        required
+        disabled={submitting}
+      />
+      <FileUpload
+        id="personal-document"
+        label="Arquivo"
+        description="Selecione o arquivo para enviar automaticamente. JPEG, PNG ou PDF, até 10MB."
+        accept="image/jpeg,image/png,application/pdf"
+        selectedFile={file}
+        onFileSelect={handleFileSelect}
+        disabled={submitting}
+      />
+      {error && (
+        <Alert variant="error" title="Erro no envio">
+          {error}
+        </Alert>
+      )}
     </Card>
   )
 }
